@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>batchflow.models.torch.layers.core &mdash; BatchFlow 0.5.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../index.html" class="icon icon-home"> BatchFlow
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../intro/intro.html">A short introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../intro/classes.html">Classes and capabilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/batchflow.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BatchFlow</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>batchflow.models.torch.layers.core</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for batchflow.models.torch.layers.core</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Basic Torch layers. &quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">get_num_channels</span><span class="p">,</span> <span class="n">get_num_dims</span><span class="p">,</span> <span class="n">safe_eval</span>
+
+
+
+<div class="viewcode-block" id="Flatten"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.Flatten">[docs]</a><span class="k">class</span> <span class="nc">Flatten</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Flatten input, optionaly keeping provided dimensions.</span>
+<span class="sd">    Batch dimension is always preserved &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keep_dims</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keep_dims</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">keep_dims</span> <span class="o">=</span> <span class="p">(</span><span class="n">keep_dims</span><span class="p">,</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="mi">0</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keep_dims</span><span class="p">:</span>
+            <span class="n">keep_dims</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">)</span> <span class="o">+</span> <span class="n">keep_dims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keep_dims</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">keep_dims</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Flatten.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.Flatten.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Not enough dimensions in input! keep_dims=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">keep_dims</span><span class="si">}</span><span class="s1">, but input shape is </span><span class="si">{</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keep_dims</span><span class="p">)</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span>
+
+        <span class="k">for</span> <span class="n">dim1</span><span class="p">,</span> <span class="n">dim2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keep_dims</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">dim1</span><span class="p">,</span> <span class="n">dim2</span><span class="p">)</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keep_dims</span><span class="p">))]</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">new_shape</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Dense"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.Dense">[docs]</a><span class="k">class</span> <span class="nc">Dense</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Dense layer.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    units : int or srt</span>
+<span class="sd">        Out_features in linear layer. see :meth:`~..utils.safe_eval` for details on str values.</span>
+
+<span class="sd">    bias : bool, optional</span>
+<span class="sd">        Whether to learn  an additive bias by default True.</span>
+
+<span class="sd">    flatten : bool, optional</span>
+<span class="sd">        Whether to flatten input prior to feeding it to linear layer, by default True.</span>
+
+<span class="sd">    keep_dims : int, optional</span>
+<span class="sd">        Dimensions to keep while flattening input, see :class:`~.Flatten`, by default 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">keep_dims</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="o">=</span> <span class="n">Flatten</span><span class="p">(</span><span class="n">keep_dims</span><span class="p">)</span> <span class="k">if</span> <span class="n">flatten</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+
+        <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">in_units</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="n">safe_eval</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">in_units</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_units</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">bias</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Dense.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.Dense.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
+
+
+
+<div class="viewcode-block" id="BatchNorm"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.BatchNorm">[docs]</a><span class="k">class</span> <span class="nc">BatchNorm</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Multi-dimensional batch normalization layer &quot;&quot;&quot;</span>
+    <span class="n">LAYERS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm3d</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">num_features</span> <span class="o">=</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LAYERS</span><span class="p">[</span><span class="n">get_num_dims</span><span class="p">(</span><span class="n">inputs</span><span class="p">)](</span><span class="n">num_features</span><span class="o">=</span><span class="n">num_features</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BatchNorm.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.BatchNorm.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
+
+
+
+<div class="viewcode-block" id="Dropout"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.Dropout">[docs]</a><span class="k">class</span> <span class="nc">Dropout</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Multi-dimensional dropout layer.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dropout_rate : float</span>
+<span class="sd">        The fraction of the input units to drop.</span>
+
+<span class="sd">    multisample: bool, number, sequence</span>
+<span class="sd">        If evaluates to True, then either multiple dropout applied to the whole batch and then averaged, or</span>
+<span class="sd">        batch is split into multiple parts, each passed through dropout and then concatenated back.</span>
+
+<span class="sd">        If True, then two different dropouts are applied to whole batch.</span>
+<span class="sd">        If integer, then that number of different dropouts are applied to whole batch.</span>
+<span class="sd">        If float, then batch is split into parts of `multisample` and `1 - multisample` sizes.</span>
+<span class="sd">        If sequence of ints, then batch is split into parts of given sizes. Must sum up to the batch size.</span>
+<span class="sd">        If sequence of floats, then each float means proportion of sizes in batch and must sum up to 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">LAYERS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout2d</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout3d</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">multisample</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">multisample</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">multisample</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">multisample</span>
+        <span class="n">multisample</span> <span class="o">=</span> <span class="p">[</span><span class="n">multisample</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">multisample</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">multisample</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="n">multisample</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multisample</span> <span class="o">=</span> <span class="n">multisample</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LAYERS</span><span class="p">[</span><span class="n">get_num_dims</span><span class="p">(</span><span class="n">inputs</span><span class="p">)](</span><span class="n">p</span><span class="o">=</span><span class="n">dropout_rate</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Dropout.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.Dropout.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multisample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span> <span class="c1"># dropout to the whole batch, then average</span>
+                <span class="n">dropped</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">)]</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">dropped</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span> <span class="c1"># split batch into separate-dropout branches</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">):</span>
+                    <span class="n">sizes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multisample</span>
+                <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">)</span> <span class="o">!=</span> <span class="mf">1.</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Sequence of floats must sum up to one for multisample dropout,</span><span class="se">\</span>
+<span class="s1">                                          got instead </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">))</span>
+
+                    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">batch_size</span><span class="o">*</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+                    <span class="n">residual</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span>
+                    <span class="n">sizes</span> <span class="o">+=</span> <span class="p">[</span><span class="n">residual</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Elements of multisample must be either all ints or floats,</span><span class="se">\</span>
+<span class="s1">                                      got instead </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">))</span>
+
+                <span class="n">splitted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sizes</span><span class="p">)</span>
+                <span class="n">dropped</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span> <span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="n">splitted</span><span class="p">]</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">dropped</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown type of multisample: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multisample</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="AlphaDropout"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.AlphaDropout">[docs]</a><span class="k">class</span> <span class="nc">AlphaDropout</span><span class="p">(</span><span class="n">Dropout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Multi-dimensional alpha-dropout layer. &quot;&quot;&quot;</span>
+    <span class="n">LAYERS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">AlphaDropout</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">AlphaDropout</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">AlphaDropout</span><span class="p">,</span>
+    <span class="p">}</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2017-2021, Analysis Center.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

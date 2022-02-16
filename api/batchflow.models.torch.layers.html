@@ -1,0 +1,1356 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>batchflow.models.torch.layers &mdash; BatchFlow 0.5.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="batchflow.research" href="batchflow.research.html" />
+    <link rel="prev" title="batchflow.models.torch" href="batchflow.models.torch.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BatchFlow
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro/intro.html">A short introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intro/classes.html">Classes and capabilities</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="batchflow.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="batchflow.core.html">batchflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="batchflow.opensets.html">batchflow.opensets</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="batchflow.models.html">batchflow.models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="batchflow.models.metrics.html">dataset.models.metrics</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="batchflow.models.torch.html">batchflow.models.torch</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="batchflow.models.torch.models.html">Models</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Custom layers and blocks</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="batchflow.research.html">batchflow.research</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BatchFlow</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="batchflow.html">API</a> &raquo;</li>
+        
+          <li><a href="batchflow.models.html">batchflow.models</a> &raquo;</li>
+        
+          <li><a href="batchflow.models.torch.html">batchflow.models.torch</a> &raquo;</li>
+        
+      <li>batchflow.models.torch.layers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/api/batchflow.models.torch.layers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-batchflow.models.torch.layers">
+<span id="batchflow-models-torch-layers"></span><h1>batchflow.models.torch.layers<a class="headerlink" href="#module-batchflow.models.torch.layers" title="Permalink to this headline">¶</a></h1>
+<p>PyTorch custom layers.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.ASPP">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">ASPP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/modules.html#ASPP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.ASPP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Atrous Spatial Pyramid Pooling module.</p>
+<p>Chen L. et al. “<a class="reference external" href="https://arxiv.org/abs/1706.05587">Rethinking Atrous Convolution for Semantic Image Segmentation</a>”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Layout for convolution layers.</p></li>
+<li><p><strong>filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of filters in the output tensor.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Kernel size for dilated branches.</p></li>
+<li><p><strong>rates</strong> (<em>tuple of int</em>) – Dilation rates for branches, default=(6, 12, 18).</p></li>
+<li><p><strong>pyramid</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><em>tuple of int</em>) – Number of image level features in each dimension.
+Default is 2, i.e. 2x2=4 pooling features will be calculated for 2d images,
+and 2x2x2=8 features per 3d item.
+Tuple allows to define several image level features, e.g (2, 3, 4).</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#batchflow.models.torch.layers.PyramidPooling" title="batchflow.models.torch.layers.PyramidPooling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PyramidPooling</span></code></a></p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.ASPP.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/modules.html#ASPP.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.ASPP.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Activation">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Activation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/activation.html#Activation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Activation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Proxy activation module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>activation</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>nn.Module</em><em>, </em><em>callable</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – <p>If None, then identity function <cite>f(x) = x</cite>.
+If str, then name from <cite>torch.nn</cite> or <cite>rsoftmax</cite>.</p>
+<blockquote>
+<div><p><cite>rsoftmax</cite> is a RadixSortmax from the paper: Hang Zhang et al. “<a class="reference external" href="https://arxiv.org/abs/2004.08955">ResNeSt: Split-Attention Networks</a>”.</p>
+</div></blockquote>
+<p>Also can be an instance of activation module (e.g. <cite>torch.nn.ReLU()</cite> or <cite>torch.nn.ELU(alpha=2.0)</cite>),
+or a class of activation module (e.g. <cite>torch.nn.ReLU</cite> or <cite>torch.nn.ELU</cite>),
+or a callable (e.g. <cite>F.relu</cite> or your custom function).</p>
+</p></li>
+<li><p><strong>args</strong> – Positional arguments passed to either class initializer or callable.</p></li>
+<li><p><strong>kwargs</strong> – Additional named arguments passed to either class initializer or callable.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Activation.FUNCTIONS">
+<span class="sig-name descname"><span class="pre">FUNCTIONS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'__all__':</span> <span class="pre">'__all__',</span> <span class="pre">'__doc__':</span> <span class="pre">'__doc__',</span> <span class="pre">'__loader__':</span> <span class="pre">'__loader__',</span> <span class="pre">'__name__':</span> <span class="pre">'__name__',</span> <span class="pre">'__package__':</span> <span class="pre">'__package__',</span> <span class="pre">'__path__':</span> <span class="pre">'__path__',</span> <span class="pre">'__spec__':</span> <span class="pre">'__spec__',</span> <span class="pre">'functional':</span> <span class="pre">'functional',</span> <span class="pre">'rsoftmax':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.activation.RadixSoftmax'&gt;}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.Activation.FUNCTIONS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Activation.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/activation.html#Activation.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Activation.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AdaptiveAvgPool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">AdaptiveAvgPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#AdaptiveAvgPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.AdaptiveAvgPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional adaptive average pooling layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AdaptiveAvgPool.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.AdaptiveAvgPool1d,</span> <span class="pre">2:</span> <span class="pre">torch.nn.AdaptiveAvgPool2d,</span> <span class="pre">3:</span> <span class="pre">torch.nn.AdaptiveAvgPool3d}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.AdaptiveAvgPool.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AdaptiveMaxPool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">AdaptiveMaxPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#AdaptiveMaxPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.AdaptiveMaxPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional adaptive max pooling layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AdaptiveMaxPool.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.AdaptiveMaxPool1d,</span> <span class="pre">2:</span> <span class="pre">torch.nn.AdaptiveMaxPool2d,</span> <span class="pre">3:</span> <span class="pre">torch.nn.AdaptiveMaxPool3d}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.AdaptiveMaxPool.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AdaptivePool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">AdaptivePool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#AdaptivePool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.AdaptivePool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional adaptive pooling layer, that selects aggregation strategy (avg or max)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AdaptivePool.OP_SELECTOR">
+<span class="sig-name descname"><span class="pre">OP_SELECTOR</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'P':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AdaptiveMaxPool'&gt;,</span> <span class="pre">'V':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AdaptiveAvgPool'&gt;,</span> <span class="pre">'avg':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AdaptiveAvgPool'&gt;,</span> <span class="pre">'max':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AdaptiveMaxPool'&gt;,</span> <span class="pre">'mean':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AdaptiveAvgPool'&gt;,</span> <span class="pre">'p':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AdaptiveMaxPool'&gt;,</span> <span class="pre">'v':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AdaptiveAvgPool'&gt;}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.AdaptivePool.OP_SELECTOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AdaptivePool.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#AdaptivePool.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.AdaptivePool.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AlphaDropout">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">AlphaDropout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/core.html#AlphaDropout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.AlphaDropout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional alpha-dropout layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AlphaDropout.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.AlphaDropout,</span> <span class="pre">2:</span> <span class="pre">torch.nn.AlphaDropout,</span> <span class="pre">3:</span> <span class="pre">torch.nn.AlphaDropout}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.AlphaDropout.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AvgPool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">AvgPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#AvgPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.AvgPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional average pooling layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.AvgPool.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.AvgPool1d,</span> <span class="pre">2:</span> <span class="pre">torch.nn.AvgPool2d,</span> <span class="pre">3:</span> <span class="pre">torch.nn.AvgPool3d}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.AvgPool.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BAM">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">BAM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#BAM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.BAM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Bottleneck Attention Module.</p>
+<p>Jongchan Park. et al. “‘BAM: Bottleneck Attention Module
+&lt;<a class="reference external" href="https://arxiv.org/abs/1807.06514">https://arxiv.org/abs/1807.06514</a>&gt;’_”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Squeeze ratio for the number of filters.
+Default is 16.</p></li>
+<li><p><strong>dilation_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – The dilation rate in the convolutions in the spatial attention submodule.
+Default is 4.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BAM.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#BAM.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.BAM.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">BaseConvBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv_block.html#BaseConvBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Complex multi-dimensional block to apply sequence of different operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>torch.Tensor</em>) – Example of input tensor to this layer.</p></li>
+<li><p><strong>layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – <p>A sequence of letters, each letter meaning individual operation:</p>
+<ul>
+<li><p><cite>&gt;</cite> - add new axis to tensor</p></li>
+<li><p>r - reshape tensor to desired shape</p></li>
+<li><p>c - convolution</p></li>
+<li><p>t - transposed convolution</p></li>
+<li><p>C - separable convolution</p></li>
+<li><p>T - separable transposed convolution</p></li>
+<li><p>w - depthwise convolution</p></li>
+<li><p>W - depthwise transposed convolution</p></li>
+<li><p>f - dense (fully connected)</p></li>
+<li><p>n - batch normalization</p></li>
+<li><p>a - activation</p></li>
+<li><p>p - pooling (default is max-pooling)</p></li>
+<li><p>v - average pooling</p></li>
+<li><p>P - global pooling (default is max-pooling)</p></li>
+<li><p>V - global average pooling</p></li>
+<li><p>d - dropout</p></li>
+<li><p>D - alpha dropout</p></li>
+<li><p>S - attention based on tensor itself (for example, squeeze and excitation)</p></li>
+<li><p>b - upsample with bilinear resize</p></li>
+<li><p>N - upsample with nearest neighbors resize</p></li>
+<li><p>X - upsample with subpixel convolution (<code class="xref py py-class docutils literal notranslate"><span class="pre">SubpixelConv</span></code>)</p></li>
+<li><p>B, R - start a new branch with auxilliary <a class="reference internal" href="#batchflow.models.torch.layers.BaseConvBlock" title="batchflow.models.torch.layers.BaseConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseConvBlock</span></code></a></p></li>
+<li><p><cite>|</cite> - end the most recent created branch with concatenation</p></li>
+<li><p><cite>+</cite> - end the most recent created branch with summation</p></li>
+<li><p><cite>*</cite> - end the most recent created branch with multiplication</p></li>
+<li><p><cite>&amp;</cite> - end the most recent created branch with softsum</p></li>
+</ul>
+<p>Default is ‘’.</p>
+</p></li>
+<li><p><strong>filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – If str, then number of filters is calculated by its evaluation. <cite>S</cite> and <cite>same</cite> stand for the
+number of filters in the previous tensor. Note the <cite>eval</cite> usage under the hood.
+If int, then number of filters in the output tensor.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Convolution kernel size.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of the layer that will be used as a scope.</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – If str, then number of units is calculated by its evaluation. <cite>S</cite> and <cite>same</cite> stand for the
+number of units in the previous tensor. Note the <cite>eval</cite> usage under the hood.
+If int, then number of units in the dense layer.</p></li>
+<li><p><strong>strides</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Convolution stride.</p></li>
+<li><p><strong>padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Padding mode, can be ‘same’ or ‘valid’. Default - ‘same’.</p></li>
+<li><p><strong>data_format</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – ‘channels_last’ or ‘channels_first’. Default - ‘channels_first’.</p></li>
+<li><p><strong>dilation_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Default is 1.</p></li>
+<li><p><strong>activation</strong> (<em>callable</em>) – Default is ReLU.</p></li>
+<li><p><strong>pool_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Default is 2.</p></li>
+<li><p><strong>pool_strides</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Default is 2.</p></li>
+<li><p><strong>pool_op</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Pooling operation (‘max’, ‘mean’, ‘frac’)</p></li>
+<li><p><strong>dropout_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Default is 0.</p></li>
+<li><p><strong>upsampling_layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Layout for upsampling layers</p></li>
+<li><p><strong>arguments</strong> (<em>other named</em>) – If None, then no common parameters are passed to all the layers of a given type.
+If False, then all the layers of a given type are disabled.
+If dict, then contains common parameters for all the layers of a given type. If ‘disable’ is present in
+this dictionary and evaluates to True, then all the layers of a given type are disabled.
+If sequence, then each element must be a dict with parameters that are passed to corresponding layers
+of a given type.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">layout</span></code> includes several layers of the same type, each one can have its own parameters,
+if corresponding args are passed as lists (not tuples).</p>
+<p>Spaces may be used to improve readability.</p>
+<p class="rubric">Examples</p>
+<p>A simple block: 3x3 conv, batch norm, relu, 2x2 max-pooling with stride 2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">BaseConvBlock</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="s1">&#39;cnap&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A canonical bottleneck block (1x1, 3x3, 1x1 conv with relu in-between):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">BaseConvBlock</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="s1">&#39;nac nac nac&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>A complex Nd block:</p>
+<ul class="simple">
+<li><p>5x5 conv with 32 filters</p></li>
+<li><p>relu</p></li>
+<li><p>3x3 conv with 32 filters</p></li>
+<li><p>relu</p></li>
+<li><p>3x3 conv with 64 filters and a spatial stride 2</p></li>
+<li><p>relu</p></li>
+<li><p>batch norm</p></li>
+<li><p>dropout with rate 0.15</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">BaseConvBlock</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="s1">&#39;ca ca ca nd&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+              <span class="n">strides</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">dropout_rate</span><span class="o">=</span><span class="mf">.15</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A residual block:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">BaseConvBlock</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="s1">&#39;R nac +&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Squeeze and excitation block:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">BaseConvBlock</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="s1">&#39;S cna *&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock.BRANCH_LETTERS">
+<span class="sig-name descname"><span class="pre">BRANCH_LETTERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['R',</span> <span class="pre">'B']</span></em><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock.BRANCH_LETTERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock.COMBINE_LETTERS">
+<span class="sig-name descname"><span class="pre">COMBINE_LETTERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['+',</span> <span class="pre">'*',</span> <span class="pre">'|',</span> <span class="pre">'&amp;']</span></em><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock.COMBINE_LETTERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock.DEFAULT_LETTERS">
+<span class="sig-name descname"><span class="pre">DEFAULT_LETTERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">dict_keys(['a',</span> <span class="pre">'B',</span> <span class="pre">'R',</span> <span class="pre">'+',</span> <span class="pre">'|',</span> <span class="pre">'*',</span> <span class="pre">'&amp;',</span> <span class="pre">'&gt;',</span> <span class="pre">'r',</span> <span class="pre">'f',</span> <span class="pre">'c',</span> <span class="pre">'t',</span> <span class="pre">'C',</span> <span class="pre">'T',</span> <span class="pre">'w',</span> <span class="pre">'W',</span> <span class="pre">'p',</span> <span class="pre">'v',</span> <span class="pre">'P',</span> <span class="pre">'V',</span> <span class="pre">'n',</span> <span class="pre">'d',</span> <span class="pre">'D',</span> <span class="pre">'S',</span> <span class="pre">'b',</span> <span class="pre">'N',</span> <span class="pre">'X'])</span></em><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock.DEFAULT_LETTERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock.LAYERS_MODULES">
+<span class="sig-name descname"><span class="pre">LAYERS_MODULES</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'activation':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.activation.Activation'&gt;,</span> <span class="pre">'alpha_dropout':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.core.AlphaDropout'&gt;,</span> <span class="pre">'batch_norm':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.core.BatchNorm'&gt;,</span> <span class="pre">'branch':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.conv_block.Branch'&gt;,</span> <span class="pre">'branch_end':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.resize.Combine'&gt;,</span> <span class="pre">'conv':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.conv.Conv'&gt;,</span> <span class="pre">'dense':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.core.Dense'&gt;,</span> <span class="pre">'depthwise_conv':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.conv.DepthwiseConv'&gt;,</span> <span class="pre">'depthwise_conv_transpose':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.conv.DepthwiseConvTranspose'&gt;,</span> <span class="pre">'dropout':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.core.Dropout'&gt;,</span> <span class="pre">'global_pooling':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.GlobalPool'&gt;,</span> <span class="pre">'increase_dim':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.resize.IncreaseDim'&gt;,</span> <span class="pre">'pooling':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.Pool'&gt;,</span> <span class="pre">'reshape':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.resize.Reshape'&gt;,</span> <span class="pre">'resize_bilinear':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.resize.Interpolate'&gt;,</span> <span class="pre">'resize_nn':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.resize.Interpolate'&gt;,</span> <span class="pre">'self_attention':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.attention.SelfAttention'&gt;,</span> <span class="pre">'separable_conv':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.conv.SeparableConv'&gt;,</span> <span class="pre">'separable_conv_transpose':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.conv.SeparableConvTranspose'&gt;,</span> <span class="pre">'subpixel_conv':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.resize.SubPixelConv'&gt;,</span> <span class="pre">'transposed_conv':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.conv.ConvTranspose'&gt;}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock.LAYERS_MODULES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock.LETTERS_GROUPS">
+<span class="sig-name descname"><span class="pre">LETTERS_GROUPS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'&amp;':</span> <span class="pre">'&amp;',</span> <span class="pre">'*':</span> <span class="pre">'*',</span> <span class="pre">'+':</span> <span class="pre">'+',</span> <span class="pre">'&gt;':</span> <span class="pre">'&gt;',</span> <span class="pre">'B':</span> <span class="pre">'B',</span> <span class="pre">'C':</span> <span class="pre">'c',</span> <span class="pre">'D':</span> <span class="pre">'d',</span> <span class="pre">'N':</span> <span class="pre">'b',</span> <span class="pre">'P':</span> <span class="pre">'P',</span> <span class="pre">'R':</span> <span class="pre">'R',</span> <span class="pre">'S':</span> <span class="pre">'S',</span> <span class="pre">'T':</span> <span class="pre">'c',</span> <span class="pre">'V':</span> <span class="pre">'P',</span> <span class="pre">'W':</span> <span class="pre">'c',</span> <span class="pre">'X':</span> <span class="pre">'X',</span> <span class="pre">'a':</span> <span class="pre">'a',</span> <span class="pre">'b':</span> <span class="pre">'b',</span> <span class="pre">'c':</span> <span class="pre">'c',</span> <span class="pre">'d':</span> <span class="pre">'d',</span> <span class="pre">'f':</span> <span class="pre">'f',</span> <span class="pre">'n':</span> <span class="pre">'d',</span> <span class="pre">'p':</span> <span class="pre">'p',</span> <span class="pre">'r':</span> <span class="pre">'r',</span> <span class="pre">'t':</span> <span class="pre">'c',</span> <span class="pre">'v':</span> <span class="pre">'p',</span> <span class="pre">'w':</span> <span class="pre">'c',</span> <span class="pre">'|':</span> <span class="pre">'|'}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock.LETTERS_GROUPS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock.LETTERS_LAYERS">
+<span class="sig-name descname"><span class="pre">LETTERS_LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'&amp;':</span> <span class="pre">'branch_end',</span> <span class="pre">'*':</span> <span class="pre">'branch_end',</span> <span class="pre">'+':</span> <span class="pre">'branch_end',</span> <span class="pre">'&gt;':</span> <span class="pre">'increase_dim',</span> <span class="pre">'B':</span> <span class="pre">'branch',</span> <span class="pre">'C':</span> <span class="pre">'separable_conv',</span> <span class="pre">'D':</span> <span class="pre">'alpha_dropout',</span> <span class="pre">'N':</span> <span class="pre">'resize_nn',</span> <span class="pre">'P':</span> <span class="pre">'global_pooling',</span> <span class="pre">'R':</span> <span class="pre">'branch',</span> <span class="pre">'S':</span> <span class="pre">'self_attention',</span> <span class="pre">'T':</span> <span class="pre">'separable_conv_transpose',</span> <span class="pre">'V':</span> <span class="pre">'global_pooling',</span> <span class="pre">'W':</span> <span class="pre">'depthwise_conv_transpose',</span> <span class="pre">'X':</span> <span class="pre">'subpixel_conv',</span> <span class="pre">'a':</span> <span class="pre">'activation',</span> <span class="pre">'b':</span> <span class="pre">'resize_bilinear',</span> <span class="pre">'c':</span> <span class="pre">'conv',</span> <span class="pre">'d':</span> <span class="pre">'dropout',</span> <span class="pre">'f':</span> <span class="pre">'dense',</span> <span class="pre">'n':</span> <span class="pre">'batch_norm',</span> <span class="pre">'p':</span> <span class="pre">'pooling',</span> <span class="pre">'r':</span> <span class="pre">'reshape',</span> <span class="pre">'t':</span> <span class="pre">'transposed_conv',</span> <span class="pre">'v':</span> <span class="pre">'pooling',</span> <span class="pre">'w':</span> <span class="pre">'depthwise_conv',</span> <span class="pre">'|':</span> <span class="pre">'branch_end'}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock.LETTERS_LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock.extra_repr">
+<span class="sig-name descname"><span class="pre">extra_repr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv_block.html#BaseConvBlock.extra_repr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock.extra_repr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock.fill_layer_params">
+<span class="sig-name descname"><span class="pre">fill_layer_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">counters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv_block.html#BaseConvBlock.fill_layer_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock.fill_layer_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect which parameters should be passed to the layer and get them from instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BaseConvBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv_block.html#BaseConvBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.BaseConvBlock.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BatchNorm">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">BatchNorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/core.html#BatchNorm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.BatchNorm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional batch normalization layer</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BatchNorm.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.BatchNorm1d,</span> <span class="pre">2:</span> <span class="pre">torch.nn.BatchNorm2d,</span> <span class="pre">3:</span> <span class="pre">torch.nn.BatchNorm3d}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.BatchNorm.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.BatchNorm.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/core.html#BatchNorm.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.BatchNorm.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.CBAM">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">CBAM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#CBAM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.CBAM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Convolutional Block Attention Module.</p>
+<p>Sanghyun Woo. et al. “‘CBAM: Convolutional Block Attention Module
+&lt;<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a>&gt;’_”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Squeeze ratio for the number of filters.
+Default is 16.</p></li>
+<li><p><strong>pool_ops</strong> (<em>list of str</em>) – Pooling operations for channel_attention module.
+Default is <cite>(‘avg’, ‘max’)</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.CBAM.channel_attention">
+<span class="sig-name descname"><span class="pre">channel_attention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pool_ops</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#CBAM.channel_attention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.CBAM.channel_attention" title="Permalink to this definition">¶</a></dt>
+<dd><p>Channel attention module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.CBAM.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#CBAM.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.CBAM.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.CBAM.spatial_attention">
+<span class="sig-name descname"><span class="pre">spatial_attention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#CBAM.spatial_attention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.CBAM.spatial_attention" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatial attention module.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.ChannelPool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">ChannelPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#ChannelPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.ChannelPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Channel pooling layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.ChannelPool.OP_SELECTOR">
+<span class="sig-name descname"><span class="pre">OP_SELECTOR</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'+':</span> <span class="pre">torch.sum,</span> <span class="pre">'P':</span> <span class="pre">torch.max,</span> <span class="pre">'V':</span> <span class="pre">torch.mean,</span> <span class="pre">'avg':</span> <span class="pre">torch.mean,</span> <span class="pre">'max':</span> <span class="pre">torch.max,</span> <span class="pre">'mean':</span> <span class="pre">torch.mean,</span> <span class="pre">'p':</span> <span class="pre">torch.max,</span> <span class="pre">'plus':</span> <span class="pre">torch.sum,</span> <span class="pre">'sum':</span> <span class="pre">torch.sum,</span> <span class="pre">'v':</span> <span class="pre">torch.mean}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.ChannelPool.OP_SELECTOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.ChannelPool.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#ChannelPool.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.ChannelPool.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Combine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Combine list of tensor into one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>sequence of torch.Tensors</em>) – Tensors to combine.</p></li>
+<li><p><strong>op</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><em>callable</em>) – If callable, then operation to be applied to the list of inputs.
+If ‘concat’, ‘cat’, ‘|’, then inputs are concated along channels axis.
+If ‘sum’, ‘+’, then inputs are summed.
+If ‘mul’, ‘*’, then inputs are multiplied.
+If ‘avg’, then inputs are averaged.
+If ‘softsum’, ‘&amp;’, then every tensor is passed through 1x1 convolution in order to have
+the same number of channels as the first tensor, and then summed.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.OPS">
+<span class="sig-name descname"><span class="pre">OPS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'&amp;':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.softsum&gt;,</span> <span class="pre">'*':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.mul&gt;,</span> <span class="pre">'+':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.sum&gt;,</span> <span class="pre">'attention':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.attention&gt;,</span> <span class="pre">'average':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.mean&gt;,</span> <span class="pre">'avg':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.mean&gt;,</span> <span class="pre">'cat':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.concat&gt;,</span> <span class="pre">'concat':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.concat&gt;,</span> <span class="pre">'mean':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.mean&gt;,</span> <span class="pre">'mul':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.mul&gt;,</span> <span class="pre">'multi':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.mul&gt;,</span> <span class="pre">'plus':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.sum&gt;,</span> <span class="pre">'softsum':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.softsum&gt;,</span> <span class="pre">'sum':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.sum&gt;,</span> <span class="pre">'|':</span> <span class="pre">&lt;function</span> <span class="pre">Combine.concat&gt;}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.Combine.OPS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.attention">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">attention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine.attention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine.attention" title="Permalink to this definition">¶</a></dt>
+<dd><p>Global Attention Upsample module.
+Hanchao Li, Pengfei Xiong, Jie An, Lingxue Wang. Pyramid Attention Network
+for Semantic Segmentation &lt;<a class="reference external" href="https://arxiv.org/abs/1805.10180">https://arxiv.org/abs/1805.10180</a>&gt;’_”</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.concat">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">concat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine.concat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine.concat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.extra_repr">
+<span class="sig-name descname"><span class="pre">extra_repr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine.extra_repr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine.extra_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report shapes before and after combination to a repr.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.mean">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine.mean" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.mul">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">mul</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine.mul"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine.mul" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multiplication with broadcasting.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.softsum">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">softsum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine.softsum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine.softsum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Softsum.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.spatial_resize">
+<span class="sig-name descname"><span class="pre">spatial_resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine.spatial_resize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine.spatial_resize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Force the same shapes of the inputs, if needed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Combine.sum">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Combine.sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Combine.sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Addition with broadcasting.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Conv">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Conv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv.html#Conv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Conv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional convolutional layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Conv.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.Conv1d,</span> <span class="pre">2:</span> <span class="pre">torch.nn.Conv2d,</span> <span class="pre">3:</span> <span class="pre">torch.nn.Conv3d}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.Conv.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Conv.TRANSPOSED">
+<span class="sig-name descname"><span class="pre">TRANSPOSED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">False</span></em><a class="headerlink" href="#batchflow.models.torch.layers.Conv.TRANSPOSED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.ConvBlock">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">ConvBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv_block.html#ConvBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.ConvBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Convenient wrapper for chaining/splitting multiple base blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>sequence</em>) – Layers to be chained.
+If element of a sequence is a module, then it is used as is.
+If element of a sequence is a dictionary, then it is used as arguments of a layer creation.
+Function that is used as layer is either <cite>base_block</cite> or <cite>base</cite>/<cite>base_block</cite> keys inside the dictionary.</p></li>
+<li><p><strong>base</strong> (<em>nn.Module</em>) – Tensor processing function.</p></li>
+<li><p><strong>base_block</strong> (<em>nn.Module</em>) – Tensor processing function.</p></li>
+<li><p><strong>n_repeats</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of times to repeat the whole block.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – Default arguments for layers creation in case of dicts present in <cite>args</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Simple encoder that reduces spatial dimensions by 32 times and increases number
+of features to maintain the same tensor size:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">({</span><span class="n">layout</span><span class="o">=</span><span class="s1">&#39;cnap&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;same*2&#39;</span><span class="p">},</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">n_repeats</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Repeat the whole construction two times:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">repeated</span> <span class="o">=</span> <span class="n">splitted</span> <span class="o">*</span> <span class="mi">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.ConvTranspose">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">ConvTranspose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv.html#ConvTranspose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.ConvTranspose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional transposed convolutional layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.ConvTranspose.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.ConvTranspose1d,</span> <span class="pre">2:</span> <span class="pre">torch.nn.ConvTranspose2d,</span> <span class="pre">3:</span> <span class="pre">torch.nn.ConvTranspose3d}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.ConvTranspose.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.ConvTranspose.TRANSPOSED">
+<span class="sig-name descname"><span class="pre">TRANSPOSED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#batchflow.models.torch.layers.ConvTranspose.TRANSPOSED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Crop">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Crop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Crop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Crop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Crop tensor to desired shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – Input tensor.</p></li>
+<li><p><strong>resize_to</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em> or </em><em>torch.Tensor</em>) – Tensor or shape to resize input tensor to.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Crop.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Crop.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Crop.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Dense">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Dense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/core.html#Dense"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Dense" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Dense layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><em>srt</em>) – Out_features in linear layer. see <code class="xref py py-meth docutils literal notranslate"><span class="pre">safe_eval()</span></code> for details on str values.</p></li>
+<li><p><strong>bias</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to learn  an additive bias by default True.</p></li>
+<li><p><strong>flatten</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to flatten input prior to feeding it to linear layer, by default True.</p></li>
+<li><p><strong>keep_dims</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – Dimensions to keep while flattening input, see <a class="reference internal" href="#batchflow.models.torch.layers.Flatten" title="batchflow.models.torch.layers.Flatten"><code class="xref py py-class docutils literal notranslate"><span class="pre">Flatten</span></code></a>, by default 0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Dense.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/core.html#Dense.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Dense.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.DepthwiseConv">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">DepthwiseConv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv.html#DepthwiseConv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.DepthwiseConv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional depthwise convolutional layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.DepthwiseConv.LAYER">
+<span class="sig-name descname"><span class="pre">LAYER</span></span><a class="headerlink" href="#batchflow.models.torch.layers.DepthwiseConv.LAYER" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#batchflow.models.torch.layers.Conv" title="batchflow.models.torch.layers.conv.Conv"><code class="xref py py-class docutils literal notranslate"><span class="pre">batchflow.models.torch.layers.conv.Conv</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.DepthwiseConvTranspose">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">DepthwiseConvTranspose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv.html#DepthwiseConvTranspose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.DepthwiseConvTranspose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional transposed depthwise convolutional layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.DepthwiseConvTranspose.LAYER">
+<span class="sig-name descname"><span class="pre">LAYER</span></span><a class="headerlink" href="#batchflow.models.torch.layers.DepthwiseConvTranspose.LAYER" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#batchflow.models.torch.layers.ConvTranspose" title="batchflow.models.torch.layers.conv.ConvTranspose"><code class="xref py py-class docutils literal notranslate"><span class="pre">batchflow.models.torch.layers.conv.ConvTranspose</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Dropout">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Dropout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/core.html#Dropout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Dropout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional dropout layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dropout_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – The fraction of the input units to drop.</p></li>
+<li><p><strong>multisample</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>number</em><em>, </em><em>sequence</em>) – <p>If evaluates to True, then either multiple dropout applied to the whole batch and then averaged, or
+batch is split into multiple parts, each passed through dropout and then concatenated back.</p>
+<p>If True, then two different dropouts are applied to whole batch.
+If integer, then that number of different dropouts are applied to whole batch.
+If float, then batch is split into parts of <cite>multisample</cite> and <cite>1 - multisample</cite> sizes.
+If sequence of ints, then batch is split into parts of given sizes. Must sum up to the batch size.
+If sequence of floats, then each float means proportion of sizes in batch and must sum up to 1.</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Dropout.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.Dropout,</span> <span class="pre">2:</span> <span class="pre">torch.nn.Dropout2d,</span> <span class="pre">3:</span> <span class="pre">torch.nn.Dropout3d}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.Dropout.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Dropout.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/core.html#Dropout.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Dropout.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.FPA">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">FPA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#FPA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.FPA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Feature Pyramid Attention.
+Hanchao Li, Pengfei Xiong, Jie An, Lingxue Wang.
+Pyramid Attention Network for Semantic Segmentation &lt;<a class="reference external" href="https://arxiv.org/abs/1805.10180">https://arxiv.org/abs/1805.10180</a>&gt;’_”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pyramid_kernel_size</strong> (<em>list of ints</em>) – Kernel sizes in pyramid block convolutions</p></li>
+<li><p><strong>layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Layout for convolution layers.</p></li>
+<li><p><strong>downsample_layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Layout for downsampling layers. Default is ‘p’</p></li>
+<li><p><strong>upsample_layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Layout for upsampling layers. Default is ‘t</p></li>
+<li><p><strong>factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Scaling factor for upsampling layers. Default is 2</p></li>
+<li><p><strong>bottleneck</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – If True, then add a 1x1 convolutions before and after pyramid block with that factor of filters reduction.
+If False, then bottleneck is not used. Default is False.</p></li>
+<li><p><strong>use_dilation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If True, then the convolutions with bigger kernels in the pyramid block are replaced by top one
+with corresponding dilation_rate, i.e. 5x5 -&gt; 3x3 with dilation=2, 7x7 -&gt; 3x3 with dilation=3.
+If False, the dilated convolutions are not used. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.FPA.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#FPA.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.FPA.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Flatten">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/core.html#Flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Flatten input, optionaly keeping provided dimensions.
+Batch dimension is always preserved</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Flatten.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/core.html#Flatten.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Flatten.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.GlobalAvgPool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">GlobalAvgPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#GlobalAvgPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.GlobalAvgPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional global avg pooling layer.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.GlobalMaxPool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">GlobalMaxPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#GlobalMaxPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.GlobalMaxPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional global max pooling layer.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.GlobalPool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">GlobalPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#GlobalPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.GlobalPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional global pooling layer.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.GlobalPool.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#GlobalPool.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.GlobalPool.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.IncreaseDim">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">IncreaseDim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#IncreaseDim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.IncreaseDim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Increase dimensionality of passed tensor by one.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.IncreaseDim.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#IncreaseDim.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.IncreaseDim.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Interpolate">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Upsample inputs with a given factor.</p>
+<p class="rubric">Notes</p>
+<p>This is just a wrapper around <code class="docutils literal notranslate"><span class="pre">F.interpolate</span></code>.</p>
+<p>For brevity <code class="docutils literal notranslate"><span class="pre">mode</span></code> can be specified with the first letter only: ‘n’, ‘l’, ‘b’, ‘t’.</p>
+<p>All the parameters should the specified as keyword arguments (i.e. with names and values).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Interpolate.MODES">
+<span class="sig-name descname"><span class="pre">MODES</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'b':</span> <span class="pre">'bilinear',</span> <span class="pre">'l':</span> <span class="pre">'linear',</span> <span class="pre">'n':</span> <span class="pre">'nearest',</span> <span class="pre">'t':</span> <span class="pre">'trilinear'}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.Interpolate.MODES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Interpolate.extra_repr">
+<span class="sig-name descname"><span class="pre">extra_repr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Interpolate.extra_repr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Interpolate.extra_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report interpolation mode and factor for a repr.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Interpolate.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Interpolate.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Interpolate.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.KSAC">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">KSAC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/modules.html#KSAC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.KSAC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Kernel sharing atrous convolution.</p>
+<p>Huang Y. et al. “<a class="reference external" href="https://arxiv.org/abs/1908.09443">See More Than Once – Kernel-Sharing Atrous Convolution for Semantic Segmentation</a>”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Layout for final postprocessing layer.</p></li>
+<li><p><strong>filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of filters in the output tensor.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Kernel size for dilated branches.</p></li>
+<li><p><strong>rates</strong> (<em>tuple of int</em>) – Dilation rates for branches, default=(6, 12, 18).</p></li>
+<li><p><strong>pyramid</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><em>tuple of int</em>) – Number of image level features in each dimension.
+Default is 2, i.e. 2x2=4 pooling features will be calculated for 2d images,
+and 2x2x2=8 features per 3d item.
+Tuple allows to define several image level features, e.g (2, 3, 4).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.KSAC.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.functional.conv1d,</span> <span class="pre">2:</span> <span class="pre">torch.nn.functional.conv2d,</span> <span class="pre">3:</span> <span class="pre">torch.nn.functional.conv3d}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.KSAC.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.KSAC.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/modules.html#KSAC.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.KSAC.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.MaxPool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">MaxPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#MaxPool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.MaxPool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional max pooling layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.MaxPool.LAYERS">
+<span class="sig-name descname"><span class="pre">LAYERS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{1:</span> <span class="pre">torch.nn.MaxPool1d,</span> <span class="pre">2:</span> <span class="pre">torch.nn.MaxPool2d,</span> <span class="pre">3:</span> <span class="pre">torch.nn.MaxPool3d}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.MaxPool.LAYERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.PixelShuffle">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">PixelShuffle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#PixelShuffle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.PixelShuffle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Resize input tensor with depth to space operation.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Pool">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#Pool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Pool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional pooling layer that selects aggregation strategy (avg or max)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Pool.OP_SELECTOR">
+<span class="sig-name descname"><span class="pre">OP_SELECTOR</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'P':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.MaxPool'&gt;,</span> <span class="pre">'V':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AvgPool'&gt;,</span> <span class="pre">'avg':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AvgPool'&gt;,</span> <span class="pre">'max':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.MaxPool'&gt;,</span> <span class="pre">'mean':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AvgPool'&gt;,</span> <span class="pre">'p':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.MaxPool'&gt;,</span> <span class="pre">'v':</span> <span class="pre">&lt;class</span> <span class="pre">'batchflow.models.torch.layers.pooling.AvgPool'&gt;}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.Pool.OP_SELECTOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Pool.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/pooling.html#Pool.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Pool.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.PyramidPooling">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">PyramidPooling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/modules.html#PyramidPooling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.PyramidPooling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Pyramid Pooling module
+Zhao H. et al. “<a class="reference external" href="https://arxiv.org/abs/1612.01105">Pyramid Scene Parsing Network</a>”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>torch.Tensor</em>) – Example of input tensor to this layer.</p></li>
+<li><p><strong>layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Sequence of operations in convolution layer.</p></li>
+<li><p><strong>filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of filters in pyramid branches.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Kernel size.</p></li>
+<li><p><strong>pool_op</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Pooling operation (‘mean’ or ‘max’).</p></li>
+<li><p><strong>pyramid</strong> (<em>tuple of int</em>) – Number of feature regions in each dimension.
+<cite>0</cite> is used to include <cite>inputs</cite> into the output tensor.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.PyramidPooling.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/modules.html#PyramidPooling.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.PyramidPooling.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Reshape">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Reshape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Reshape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Enforce desired shape of tensor.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Reshape.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Reshape.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Reshape.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SCSEBlock">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SCSEBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SCSEBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SCSEBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Concurrent spatial and channel squeeze and excitation.
+Roy A.G. et al. “<a class="reference external" href="https://arxiv.org/abs/1803.02579">Concurrent Spatial and Channel ‘Squeeze &amp; Excitation’
+in Fully Convolutional Networks</a>”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – Squeeze ratio for the number of filters.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SCSEBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SCSEBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SCSEBlock.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SEBlock">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SEBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SEBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SEBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Squeeze and excitation block.
+Hu J. et al. “<a class="reference external" href="https://arxiv.org/abs/1709.01507">Squeeze-and-Excitation Networks</a>”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Squeeze ratio for the number of filters.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SEBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SEBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SEBlock.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelectiveKernelConv">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SelectiveKernelConv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelectiveKernelConv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelectiveKernelConv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Selective Kernel Convolution.</p>
+<p>Xiang Li. et al. “‘Selective Kernel Networks
+&lt;<a class="reference external" href="https://arxiv.org/abs/1903.06586">https://arxiv.org/abs/1903.06586</a>&gt;’_”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kernels</strong> (<em>tuple of int</em>) – Tuple of kernel_sizes for branches in split part.
+Default is <cite>(3, 5)</cite>.</p></li>
+<li><p><strong>use_dilation</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, then convolution in split part uses instead of the <cite>kernel_size</cite>
+from the <cite>kernels</cite> the <cite>kernel_size=3</cite> and the appropriate dilation rate.
+If <code class="docutils literal notranslate"><span class="pre">False</span></code>, then dilated convolutions are not used. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>min_units</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Minimum length of fused vector. Default is 32.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelectiveKernelConv.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelectiveKernelConv.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelectiveKernelConv.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SelfAttention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Attention based on tensor itself.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>attention_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><em>callable</em>) – <p>If callable, then directly applied to the input tensor.
+If str, then one of predefined attention layers:</p>
+<blockquote>
+<div><p>If <cite>se</cite>, then squeeze and excitation.
+Hu J. et al. “<a class="reference external" href="https://arxiv.org/abs/1709.01507">Squeeze-and-Excitation Networks</a>”</p>
+<p>If <cite>scse</cite>, then concurrent spatial and channel squeeze and excitation.
+Roy A.G. et al. “<a class="reference external" href="https://arxiv.org/abs/1803.02579">Concurrent Spatial and Channel ‘Squeeze &amp; Excitation’
+in Fully Convolutional Networks</a>”</p>
+<p>If <cite>ssa</cite>, then simple self attention.
+Wang Z. et al. “‘Less Memory, Faster Speed: Refining Self-Attention Module for Image
+Reconstruction &lt;<a class="reference external" href="https://arxiv.org/abs/1905.08008">https://arxiv.org/abs/1905.08008</a>&gt;’_”</p>
+<p>If <cite>bam</cite>, then bottleneck attention module.
+Jongchan Park. et al. “‘BAM: Bottleneck Attention Module
+&lt;<a class="reference external" href="https://arxiv.org/abs/1807.06514">https://arxiv.org/abs/1807.06514</a>&gt;’_”</p>
+<p>If <cite>cbam</cite>, then convolutional block attention module.
+Sanghyun Woo. et al. “‘CBAM: Convolutional Block Attention Module
+&lt;<a class="reference external" href="https://arxiv.org/abs/1807.06521">https://arxiv.org/abs/1807.06521</a>&gt;’_”</p>
+<p>If <cite>fpa</cite>, then feature pyramid attention.
+Hanchao Li, Pengfei Xiong, Jie An, Lingxue Wang.
+Pyramid Attention Network for Semantic Segmentation &lt;<a class="reference external" href="https://arxiv.org/abs/1805.10180">https://arxiv.org/abs/1805.10180</a>&gt;’_”</p>
+<p>If <cite>sac</cite>, then split attention.
+Hang Zhang et al. “<a class="reference external" href="https://arxiv.org/abs/2004.08955">ResNeSt: Split-Attention Networks</a>”</p>
+</div></blockquote>
+</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.ATTENTIONS">
+<span class="sig-name descname"><span class="pre">ATTENTIONS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">{'se':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.squeeze_and_excitation&gt;,</span> <span class="pre">'squeeze_and_excitation':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.squeeze_and_excitation&gt;,</span> <span class="pre">'SE':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.squeeze_and_excitation&gt;,</span> <span class="pre">True:</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.squeeze_and_excitation&gt;,</span> <span class="pre">'scse':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.scse&gt;,</span> <span class="pre">'SCSE':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.scse&gt;,</span> <span class="pre">'ssa':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.ssa&gt;,</span> <span class="pre">'SSA':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.ssa&gt;,</span> <span class="pre">'bam':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.bam&gt;,</span> <span class="pre">'BAM':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.bam&gt;,</span> <span class="pre">'cbam':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.cbam&gt;,</span> <span class="pre">'CBAM':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.cbam&gt;,</span> <span class="pre">'fpa':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.fpa&gt;,</span> <span class="pre">'FPA':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.fpa&gt;,</span> <span class="pre">'identity':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.identity&gt;,</span> <span class="pre">None:</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.identity&gt;,</span> <span class="pre">False:</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.identity&gt;,</span> <span class="pre">'sac':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.sac&gt;,</span> <span class="pre">'SAC':</span> <span class="pre">&lt;function</span> <span class="pre">SelfAttention.sac&gt;}</span></em><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.ATTENTIONS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.bam">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">bam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.bam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.bam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bottleneck Attention Module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.cbam">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">cbam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.cbam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.cbam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convolutional Block Attention Module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.extra_repr">
+<span class="sig-name descname"><span class="pre">extra_repr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.extra_repr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.extra_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report used attention in a repr.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.fpa">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">fpa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pyramid_kernel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(7,</span> <span class="pre">5,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bottleneck</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.fpa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.fpa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Feature Pyramid Attention.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.identity">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return tensor unchanged.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.sac">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">sac</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cardinality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.sac"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.sac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split-Attention Block.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.scse">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">scse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.scse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.scse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concurrent spatial and channel squeeze and excitation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.squeeze_and_excitation">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">squeeze_and_excitation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.squeeze_and_excitation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.squeeze_and_excitation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Squeeze and excitation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SelfAttention.ssa">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">ssa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SelfAttention.ssa"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SelfAttention.ssa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple Self Attention.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SeparableConv">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SeparableConv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv.html#SeparableConv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SeparableConv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional separable convolutional layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SeparableConv.LAYER">
+<span class="sig-name descname"><span class="pre">LAYER</span></span><a class="headerlink" href="#batchflow.models.torch.layers.SeparableConv.LAYER" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#batchflow.models.torch.layers.DepthwiseConv" title="batchflow.models.torch.layers.conv.DepthwiseConv"><code class="xref py py-class docutils literal notranslate"><span class="pre">batchflow.models.torch.layers.conv.DepthwiseConv</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SeparableConvTranspose">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SeparableConvTranspose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv.html#SeparableConvTranspose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SeparableConvTranspose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Multi-dimensional separable depthwise convolutional layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SeparableConvTranspose.LAYER">
+<span class="sig-name descname"><span class="pre">LAYER</span></span><a class="headerlink" href="#batchflow.models.torch.layers.SeparableConvTranspose.LAYER" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#batchflow.models.torch.layers.DepthwiseConvTranspose" title="batchflow.models.torch.layers.conv.DepthwiseConvTranspose"><code class="xref py py-class docutils literal notranslate"><span class="pre">batchflow.models.torch.layers.conv.DepthwiseConvTranspose</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SimpleSelfAttention">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SimpleSelfAttention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SimpleSelfAttention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SimpleSelfAttention" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Improved self Attention module.</p>
+<p>Wang Z. et al. “‘Less Memory, Faster Speed: Refining Self-Attention Module for Image
+Reconstruction &lt;<a class="reference external" href="https://arxiv.org/abs/1905.08008">https://arxiv.org/abs/1905.08008</a>&gt;’_”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reduction_ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – The reduction ratio of filters in the inner convolutions.</p></li>
+<li><p><strong>kernel_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Kernel size.</p></li>
+<li><p><strong>layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Layout for convolution layers.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SimpleSelfAttention.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/attention.html#SimpleSelfAttention.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SimpleSelfAttention.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.SubPixelConv">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SubPixelConv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#SubPixelConv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.SubPixelConv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>An alias for PixelShuffle.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Upsample">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Upsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Upsample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Upsample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.</span></code></p>
+<p>Upsample inputs with a given factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> – Input tensor.</p></li>
+<li><p><strong>factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Upsamping scale.</p></li>
+<li><p><strong>shape</strong> (<em>tuple of int</em>) – Shape to upsample to (used by bilinear and NN resize).</p></li>
+<li><p><strong>layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – <p>Resizing technique, a sequence of:</p>
+<ul>
+<li><p>b - bilinear resize</p></li>
+<li><p>N - nearest neighbor resize</p></li>
+<li><p>t - transposed convolution</p></li>
+<li><p>T - separable transposed convolution</p></li>
+<li><p>X - subpixel convolution</p></li>
+</ul>
+<p>all other <code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code> layers are also allowed.</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>A simple bilinear upsampling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">Upsample</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Upsampling with non-linear normalized transposed convolution:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">Upsample</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="s1">&#39;nat&#39;</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Subpixel convolution:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">Upsample</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.Upsample.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/resize.html#Upsample.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.Upsample.forward" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="batchflow.models.torch.layers.update_layers">
+<span class="sig-name descname"><span class="pre">update_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">letter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/layers/conv_block.html#update_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.layers.update_layers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add custom letter to layout parsing procedure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>letter</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Letter to add.</p></li>
+<li><p><strong>module</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>) – Tensor-processing layer. Must have layer-like signature (both init and forward methods overloaded).</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of parameter dictionary. Defaults to <cite>letter</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Add custom <cite>Q</cite> letter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">block</span><span class="o">.</span><span class="n">add_letter</span><span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="n">my_module</span><span class="p">,</span> <span class="s1">&#39;custom_module_params&#39;</span><span class="p">)</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">BaseConvBlock</span><span class="p">(</span><span class="s1">&#39;cnap Q&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">custom_module_params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;key&#39;</span><span class="p">:</span> <span class="s1">&#39;value&#39;</span><span class="p">})</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">block</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="batchflow.research.html" class="btn btn-neutral float-right" title="batchflow.research" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="batchflow.models.torch.html" class="btn btn-neutral float-left" title="batchflow.models.torch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2017-2021, Analysis Center.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

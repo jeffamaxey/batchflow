@@ -1,0 +1,876 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>batchflow.models.torch.layers.attention &mdash; BatchFlow 0.5.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../index.html" class="icon icon-home"> BatchFlow
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../intro/intro.html">A short introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../intro/classes.html">Classes and capabilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/batchflow.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BatchFlow</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>batchflow.models.torch.layers.attention</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for batchflow.models.torch.layers.attention</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Contains attention layers.</span>
+<span class="sd">Note that we can&#39;t import :class:`~.layers.ConvBlock` directly due to recursive imports.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="kn">from</span> <span class="nn">.conv</span> <span class="kn">import</span> <span class="n">Conv</span>
+<span class="kn">from</span> <span class="nn">.resize</span> <span class="kn">import</span> <span class="n">Combine</span>
+<span class="kn">from</span> <span class="nn">.pooling</span> <span class="kn">import</span> <span class="n">GlobalPool</span><span class="p">,</span> <span class="n">ChannelPool</span>
+<span class="kn">from</span> <span class="nn">.activation</span> <span class="kn">import</span> <span class="n">RadixSoftmax</span><span class="p">,</span> <span class="n">Activation</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">get_shape</span><span class="p">,</span> <span class="n">get_num_dims</span><span class="p">,</span> <span class="n">get_num_channels</span><span class="p">,</span> <span class="n">safe_eval</span>
+
+
+
+<div class="viewcode-block" id="SelfAttention"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention">[docs]</a><span class="k">class</span> <span class="nc">SelfAttention</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Attention based on tensor itself.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    attention_mode : str or callable</span>
+<span class="sd">        If callable, then directly applied to the input tensor.</span>
+<span class="sd">        If str, then one of predefined attention layers:</span>
+
+<span class="sd">            If `se`, then squeeze and excitation.</span>
+<span class="sd">            Hu J. et al. &quot;`Squeeze-and-Excitation Networks &lt;https://arxiv.org/abs/1709.01507&gt;`_&quot;</span>
+
+<span class="sd">            If `scse`, then concurrent spatial and channel squeeze and excitation.</span>
+<span class="sd">            Roy A.G. et al. &quot;`Concurrent Spatial and Channel ‘Squeeze &amp; Excitation’</span>
+<span class="sd">            in Fully Convolutional Networks &lt;https://arxiv.org/abs/1803.02579&gt;`_&quot;</span>
+
+<span class="sd">            If `ssa`, then simple self attention.</span>
+<span class="sd">            Wang Z. et al. &quot;&#39;Less Memory, Faster Speed: Refining Self-Attention Module for Image</span>
+<span class="sd">            Reconstruction &lt;https://arxiv.org/abs/1905.08008&gt;&#39;_&quot;</span>
+
+<span class="sd">            If `bam`, then bottleneck attention module.</span>
+<span class="sd">            Jongchan Park. et al. &quot;&#39;BAM: Bottleneck Attention Module</span>
+<span class="sd">            &lt;https://arxiv.org/abs/1807.06514&gt;&#39;_&quot;</span>
+
+<span class="sd">            If `cbam`, then convolutional block attention module.</span>
+<span class="sd">            Sanghyun Woo. et al. &quot;&#39;CBAM: Convolutional Block Attention Module</span>
+<span class="sd">            &lt;https://arxiv.org/abs/1807.06521&gt;&#39;_&quot;</span>
+
+<span class="sd">            If `fpa`, then feature pyramid attention.</span>
+<span class="sd">            Hanchao Li, Pengfei Xiong, Jie An, Lingxue Wang.</span>
+<span class="sd">            Pyramid Attention Network for Semantic Segmentation &lt;https://arxiv.org/abs/1805.10180&gt;&#39;_&quot;</span>
+
+<span class="sd">            If `sac`, then split attention.</span>
+<span class="sd">            Hang Zhang et al. &quot;`ResNeSt: Split-Attention Networks</span>
+<span class="sd">            &lt;https://arxiv.org/abs/2004.08955&gt;`_&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SelfAttention.identity"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.identity">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">identity</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Return tensor unchanged. &quot;&quot;&quot;</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">kwargs</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SelfAttention.squeeze_and_excitation"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.squeeze_and_excitation">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">squeeze_and_excitation</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Squeeze and excitation. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SEBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SelfAttention.scse"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.scse">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">scse</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Concurrent spatial and channel squeeze and excitation. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SCSEBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SelfAttention.ssa"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.ssa">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">ssa</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Simple Self Attention. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SimpleSelfAttention</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SelfAttention.bam"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.bam">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">bam</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Bottleneck Attention Module. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">BAM</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SelfAttention.cbam"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.cbam">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">cbam</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Convolutional Block Attention Module. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">CBAM</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SelfAttention.fpa"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.fpa">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fpa</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">pyramid_kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">bottleneck</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Feature Pyramid Attention. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">FPA</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">pyramid_kernel_size</span><span class="o">=</span><span class="n">pyramid_kernel_size</span><span class="p">,</span> <span class="n">bottleneck</span><span class="o">=</span><span class="n">bottleneck</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SelfAttention.sac"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.sac">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sac</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">radix</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Split-Attention Block. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SplitAttentionConv</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">radix</span><span class="o">=</span><span class="n">radix</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="n">cardinality</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="n">ATTENTIONS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">squeeze_and_excitation</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;se&#39;</span><span class="p">,</span> <span class="s1">&#39;squeeze_and_excitation&#39;</span><span class="p">,</span> <span class="s1">&#39;SE&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">],</span>
+        <span class="n">scse</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;scse&#39;</span><span class="p">,</span> <span class="s1">&#39;SCSE&#39;</span><span class="p">],</span>
+        <span class="n">ssa</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;ssa&#39;</span><span class="p">,</span> <span class="s1">&#39;SSA&#39;</span><span class="p">],</span>
+        <span class="n">bam</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;bam&#39;</span><span class="p">,</span> <span class="s1">&#39;BAM&#39;</span><span class="p">],</span>
+        <span class="n">cbam</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;cbam&#39;</span><span class="p">,</span> <span class="s1">&#39;CBAM&#39;</span><span class="p">],</span>
+        <span class="n">fpa</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;fpa&#39;</span><span class="p">,</span> <span class="s1">&#39;FPA&#39;</span><span class="p">],</span>
+        <span class="n">identity</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;identity&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+        <span class="n">sac</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sac&#39;</span><span class="p">,</span> <span class="s1">&#39;SAC&#39;</span><span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">ATTENTIONS</span> <span class="o">=</span> <span class="p">{</span><span class="n">alias</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="s1">&#39;__func__&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">method</span><span class="p">,</span> <span class="n">aliases</span> <span class="ow">in</span> <span class="n">ATTENTIONS</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">aliases</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attention</span><span class="o">=</span><span class="s1">&#39;se&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attention</span> <span class="o">=</span> <span class="n">attention</span>
+
+        <span class="k">if</span> <span class="n">attention</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ATTENTIONS</span><span class="p">:</span>
+            <span class="n">op</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ATTENTIONS</span><span class="p">[</span><span class="n">attention</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">op</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">attention</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">op</span> <span class="o">=</span> <span class="n">attention</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Attention mode must be a callable or one from </span><span class="si">{}</span><span class="s1">, instead got </span><span class="si">{}</span><span class="s1">.&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ATTENTIONS</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">attention</span><span class="p">))</span>
+
+<div class="viewcode-block" id="SelfAttention.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">op</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SelfAttention.extra_repr"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelfAttention.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Report used attention in a repr. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attention</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="s1">&#39;op=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attention</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;op=callable </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attention</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></div></div>
+
+
+
+<div class="viewcode-block" id="SEBlock"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SEBlock">[docs]</a><span class="k">class</span> <span class="nc">SEBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Squeeze and excitation block.</span>
+<span class="sd">    Hu J. et al. &quot;`Squeeze-and-Excitation Networks &lt;https://arxiv.org/abs/1709.01507&gt;`_&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ratio : int</span>
+<span class="sd">        Squeeze ratio for the number of filters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.conv_block</span> <span class="kn">import</span> <span class="n">ConvBlock</span> <span class="c1"># can&#39;t be imported in the file beginning due to recursive imports</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">in_filters</span> <span class="o">=</span> <span class="n">get_shape</span><span class="p">(</span><span class="n">inputs</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="p">[</span><span class="n">in_filters</span> <span class="o">//</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">in_filters</span><span class="p">]</span>
+        <span class="n">activations</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="s1">&#39;sigmoid&#39;</span><span class="p">]</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="s1">&#39;V&gt;caca&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                  <span class="s1">&#39;filters&#39;</span><span class="p">:</span> <span class="n">filters</span><span class="p">,</span>
+                  <span class="s1">&#39;activation&#39;</span><span class="p">:</span> <span class="n">activations</span><span class="p">,</span>
+                  <span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="n">get_num_dims</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+                  <span class="s1">&#39;bias&#39;</span><span class="p">:</span> <span class="n">bias</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s1">&#39;filters&#39;</span><span class="p">:</span> <span class="n">filters</span><span class="p">,</span>
+            <span class="s1">&#39;ratio&#39;</span><span class="p">:</span> <span class="n">ratio</span><span class="p">,</span>
+            <span class="s1">&#39;bias&#39;</span><span class="p">:</span> <span class="n">bias</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="SEBlock.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SEBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Combine</span><span class="o">.</span><span class="n">mul</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="n">layer_desc</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{class}</span><span class="s1">(filters=</span><span class="si">{filters}</span><span class="s1">, ratio=</span><span class="si">{ratio}</span><span class="s1">, bias=</span><span class="si">{bias}</span><span class="s1">)&#39;</span>
+                      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">layer_desc</span></div>
+
+
+<div class="viewcode-block" id="SCSEBlock"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SCSEBlock">[docs]</a><span class="k">class</span> <span class="nc">SCSEBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Concurrent spatial and channel squeeze and excitation.</span>
+<span class="sd">    Roy A.G. et al. &quot;`Concurrent Spatial and Channel ‘Squeeze &amp; Excitation’</span>
+<span class="sd">    in Fully Convolutional Networks &lt;https://arxiv.org/abs/1803.02579&gt;`_&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ratio : int, optional</span>
+<span class="sd">        Squeeze ratio for the number of filters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.conv_block</span> <span class="kn">import</span> <span class="n">ConvBlock</span> <span class="c1"># can&#39;t be imported in the file beginning due to recursive imports</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cse</span> <span class="o">=</span> <span class="n">SEBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="s1">&#39;ca&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;filters&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;activation&#39;</span><span class="p">:</span> <span class="s1">&#39;sigmoid&#39;</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sse</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s1">&#39;ratio&#39;</span><span class="p">:</span> <span class="n">ratio</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="SCSEBlock.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SCSEBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">cse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cse</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">sse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sse</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Combine</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">cse</span><span class="p">,</span> <span class="n">Combine</span><span class="o">.</span><span class="n">mul</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">sse</span><span class="p">))))</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="n">layer_desc</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{class}</span><span class="s1">(ratio=</span><span class="si">{ratio}</span><span class="s1">)&#39;</span>
+                      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">layer_desc</span></div>
+
+
+
+<div class="viewcode-block" id="SimpleSelfAttention"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SimpleSelfAttention">[docs]</a><span class="k">class</span> <span class="nc">SimpleSelfAttention</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Improved self Attention module.</span>
+
+<span class="sd">    Wang Z. et al. &quot;&#39;Less Memory, Faster Speed: Refining Self-Attention Module for Image</span>
+<span class="sd">    Reconstruction &lt;https://arxiv.org/abs/1905.08008&gt;&#39;_&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    reduction_ratio : int</span>
+<span class="sd">        The reduction ratio of filters in the inner convolutions.</span>
+<span class="sd">    kernel_size : int</span>
+<span class="sd">        Kernel size.</span>
+<span class="sd">    layout : str</span>
+<span class="sd">        Layout for convolution layers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;cna&#39;</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.conv_block</span> <span class="kn">import</span> <span class="n">ConvBlock</span> <span class="c1"># can&#39;t be imported in the file beginning due to recursive imports</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_branch</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;same//</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ratio</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mid_branch</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;same//</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ratio</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bot_branch</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="n">layout</span><span class="p">,</span>
+            <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="n">kernel_size</span><span class="p">,</span>
+            <span class="s1">&#39;ratio&#39;</span><span class="p">:</span> <span class="n">ratio</span><span class="p">,</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="SimpleSelfAttention.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SimpleSelfAttention.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">batch_size</span><span class="p">,</span> <span class="n">spatial</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="n">num_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">spatial</span><span class="p">)</span>
+
+        <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mid_branch</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)</span> <span class="c1"># (B, C/8, N)</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bot_branch</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># (B, N, C)</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_features</span> <span class="c1"># (B, C/8, C)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_branch</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># (B, N, C/8)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">attention</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">spatial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="o">*</span><span class="n">out</span> <span class="o">+</span> <span class="n">x</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="n">layer_desc</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{class}</span><span class="s1">(layout=</span><span class="si">{layout}</span><span class="s1">, kernel_size=</span><span class="si">{kernel_size}</span><span class="s1">, ratio=</span><span class="si">{ratio}</span><span class="s1">)&#39;</span>
+                      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">layer_desc</span></div>
+
+
+
+<div class="viewcode-block" id="BAM"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.BAM">[docs]</a><span class="k">class</span> <span class="nc">BAM</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Bottleneck Attention Module.</span>
+
+<span class="sd">    Jongchan Park. et al. &quot;&#39;BAM: Bottleneck Attention Module</span>
+<span class="sd">    &lt;https://arxiv.org/abs/1807.06514&gt;&#39;_&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ratio : int</span>
+<span class="sd">        Squeeze ratio for the number of filters.</span>
+<span class="sd">        Default is 16.</span>
+<span class="sd">    dilation_rate : int</span>
+<span class="sd">        The dilation rate in the convolutions in the spatial attention submodule.</span>
+<span class="sd">        Default is 4.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">dilation_rate</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.conv_block</span> <span class="kn">import</span> <span class="n">ConvBlock</span> <span class="c1"># can&#39;t be imported in the file beginning due to recursive imports</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">in_channels</span> <span class="o">=</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bam_attention</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;R&#39;</span> <span class="o">+</span> <span class="s1">&#39;cna&#39;</span><span class="o">*</span><span class="mi">3</span>  <span class="o">+</span> <span class="s1">&#39;c&#39;</span> <span class="o">+</span> <span class="s1">&#39;+ a&#39;</span><span class="p">,</span>
+            <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;same//</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ratio</span><span class="p">),</span> <span class="s1">&#39;same&#39;</span><span class="p">,</span> <span class="s1">&#39;same&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">dilation_rate</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">dilation_rate</span><span class="p">,</span> <span class="n">dilation_rate</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;relu&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="p">[</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">],</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">branch</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="s1">&#39;Vfnaf &gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">in_channels</span><span class="o">//</span><span class="n">ratio</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">],</span> <span class="s1">&#39;dim&#39;</span><span class="p">:</span> <span class="n">get_num_dims</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+                    <span class="s1">&#39;activation&#39;</span><span class="p">:</span> <span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="s1">&#39;bias&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s1">&#39;in_filters&#39;</span><span class="p">:</span> <span class="n">in_channels</span><span class="p">,</span>
+            <span class="s1">&#39;out_filters&#39;</span><span class="p">:</span> <span class="n">in_channels</span><span class="p">,</span>
+            <span class="s1">&#39;dilation_rate&#39;</span><span class="p">:</span> <span class="n">dilation_rate</span><span class="p">,</span>
+            <span class="s1">&#39;ratio&#39;</span><span class="p">:</span> <span class="n">ratio</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="BAM.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.BAM.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bam_attention</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="n">layer_desc</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{class}</span><span class="s1">(</span><span class="si">{in_filters}</span><span class="s1">, </span><span class="si">{out_filters}</span><span class="s1">, &#39;</span>
+                      <span class="s1">&#39;dilation_rate=</span><span class="si">{dilation_rate}</span><span class="s1">, ratio=</span><span class="si">{ratio}</span><span class="s1">)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">layer_desc</span></div>
+
+
+
+<div class="viewcode-block" id="CBAM"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.CBAM">[docs]</a><span class="k">class</span> <span class="nc">CBAM</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Convolutional Block Attention Module.</span>
+
+<span class="sd">    Sanghyun Woo. et al. &quot;&#39;CBAM: Convolutional Block Attention Module</span>
+<span class="sd">    &lt;https://arxiv.org/abs/1807.06521&gt;&#39;_&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ratio : int</span>
+<span class="sd">        Squeeze ratio for the number of filters.</span>
+<span class="sd">        Default is 16.</span>
+<span class="sd">    pool_ops : list of str</span>
+<span class="sd">        Pooling operations for channel_attention module.</span>
+<span class="sd">        Default is `(&#39;avg&#39;, &#39;max&#39;)`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">pool_ops</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;avg&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel_attention</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">pool_ops</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spatial_attention</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s1">&#39;in_filters&#39;</span><span class="p">:</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+            <span class="s1">&#39;out_filters&#39;</span><span class="p">:</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+            <span class="s1">&#39;pool_ops&#39;</span><span class="p">:</span> <span class="n">pool_ops</span><span class="p">,</span>
+            <span class="s1">&#39;ratio&#39;</span><span class="p">:</span> <span class="n">ratio</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="CBAM.channel_attention"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.CBAM.channel_attention">[docs]</a>    <span class="k">def</span> <span class="nf">channel_attention</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">pool_ops</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Channel attention module.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">.conv_block</span> <span class="kn">import</span> <span class="n">ConvBlock</span> <span class="c1"># can&#39;t be imported in the file beginning due to recursive imports</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool_layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">num_dims</span> <span class="o">=</span> <span class="n">get_num_dims</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">num_channels</span> <span class="o">=</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">pool_op</span> <span class="ow">in</span> <span class="n">pool_ops</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">GlobalPool</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">pool_op</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pool_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+        <span class="n">tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_layers</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shared_layer</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">tensor</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;faf&gt;&#39;</span><span class="p">,</span>
+                                      <span class="n">units</span><span class="o">=</span><span class="p">[</span><span class="n">num_channels</span> <span class="o">//</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">],</span>
+                                      <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">num_dims</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">combine_cam</span> <span class="o">=</span> <span class="n">Combine</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CBAM.spatial_attention"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.CBAM.spatial_attention">[docs]</a>    <span class="k">def</span> <span class="nf">spatial_attention</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Spatial attention module.&quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">.conv_block</span> <span class="kn">import</span> <span class="n">ConvBlock</span> <span class="c1"># can&#39;t be imported in the file beginning due to recursive imports</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combine_sam</span> <span class="o">=</span> <span class="n">Combine</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s1">&#39;concat&#39;</span><span class="p">)</span>
+        <span class="n">cat_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine_sam</span><span class="p">([</span><span class="n">ChannelPool</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)(</span><span class="n">inputs</span><span class="p">),</span>
+                                         <span class="n">ChannelPool</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">)(</span><span class="n">inputs</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sam</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">cat_features</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;cna&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+                             <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CBAM.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.CBAM.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">tensor_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pool</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_layers</span><span class="p">:</span>
+            <span class="n">pool_feature</span> <span class="o">=</span> <span class="n">pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_layer</span><span class="p">(</span><span class="n">pool_feature</span><span class="p">)</span>
+            <span class="n">tensor_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine_cam</span><span class="p">(</span><span class="n">tensor_list</span><span class="p">)</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">)(</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">attention</span>
+        <span class="n">cat_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine_sam</span><span class="p">([</span><span class="n">ChannelPool</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">),</span>
+                                         <span class="n">ChannelPool</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)])</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sam</span><span class="p">(</span><span class="n">cat_features</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">attention</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="n">layer_desc</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{class}</span><span class="s1">(</span><span class="si">{in_filters}</span><span class="s1">, </span><span class="si">{out_filters}</span><span class="s1">, &#39;</span>
+                      <span class="s1">&#39;pool_ops=</span><span class="si">{pool_ops}</span><span class="s1">, ratio=</span><span class="si">{ratio}</span><span class="s1">)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">layer_desc</span></div>
+
+
+
+<div class="viewcode-block" id="FPA"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.FPA">[docs]</a><span class="k">class</span> <span class="nc">FPA</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Feature Pyramid Attention.</span>
+<span class="sd">    Hanchao Li, Pengfei Xiong, Jie An, Lingxue Wang.</span>
+<span class="sd">    Pyramid Attention Network for Semantic Segmentation &lt;https://arxiv.org/abs/1805.10180&gt;&#39;_&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pyramid_kernel_size: list of ints</span>
+<span class="sd">        Kernel sizes in pyramid block convolutions</span>
+<span class="sd">    layout: str</span>
+<span class="sd">        Layout for convolution layers.</span>
+<span class="sd">    downsample_layout: str</span>
+<span class="sd">        Layout for downsampling layers. Default is &#39;p&#39;</span>
+<span class="sd">    upsample_layout: str</span>
+<span class="sd">        Layout for upsampling layers. Default is &#39;t</span>
+<span class="sd">    factor: int</span>
+<span class="sd">        Scaling factor for upsampling layers. Default is 2</span>
+<span class="sd">    bottleneck : bool, int</span>
+<span class="sd">        If True, then add a 1x1 convolutions before and after pyramid block with that factor of filters reduction.</span>
+<span class="sd">        If False, then bottleneck is not used. Default is False.</span>
+<span class="sd">    use_dilation: bool</span>
+<span class="sd">        If True, then the convolutions with bigger kernels in the pyramid block are replaced by top one</span>
+<span class="sd">        with corresponding dilation_rate, i.e. 5x5 -&gt; 3x3 with dilation=2, 7x7 -&gt; 3x3 with dilation=3.</span>
+<span class="sd">        If False, the dilated convolutions are not used. Default is False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pyramid_kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">bottleneck</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;cna&#39;</span><span class="p">,</span>
+                 <span class="n">downsample_layout</span><span class="o">=</span><span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="n">upsample_layout</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">use_dilation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.conv_block</span> <span class="kn">import</span> <span class="n">ConvBlock</span> <span class="c1"># can&#39;t be imported in the file beginning due to recursive imports</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pyramid_kernel_size</span><span class="p">)</span>
+        <span class="n">spatial_shape</span> <span class="o">=</span> <span class="n">get_shape</span><span class="p">(</span><span class="n">inputs</span><span class="p">)[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="n">num_dims</span> <span class="o">=</span> <span class="n">get_num_dims</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">attention</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;V &gt;&#39;</span> <span class="o">+</span> <span class="n">layout</span> <span class="o">+</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                   <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">spatial_shape</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">num_dims</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">enc_layout</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;B&#39;</span> <span class="o">+</span> <span class="n">downsample_layout</span> <span class="o">+</span> <span class="n">layout</span><span class="p">)</span> <span class="o">*</span> <span class="n">depth</span> <span class="c1"># B pcna B pcna B pcna</span>
+        <span class="n">emb_layout</span> <span class="o">=</span> <span class="n">layout</span> <span class="o">+</span> <span class="n">upsample_layout</span> <span class="c1"># cnat</span>
+        <span class="n">combine_layout</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;+&#39;</span> <span class="o">+</span> <span class="n">upsample_layout</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span> <span class="c1"># +t+t*</span>
+        <span class="n">main_layout</span> <span class="o">=</span> <span class="n">enc_layout</span> <span class="o">+</span> <span class="n">emb_layout</span> <span class="o">+</span> <span class="n">combine_layout</span> <span class="c1"># B pcna B pcna B pcna cnat +t+t*</span>
+        <span class="n">main_strides</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">*</span> <span class="n">depth</span> <span class="c1"># [1, 1, 1, 1, 2, 2, 2]</span>
+
+        <span class="c1"># list with args for BaseBlocks of each branch</span>
+        <span class="n">branches</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span> <span class="c1"># the mid branch from inputs tensor directly</span>
+
+        <span class="k">if</span> <span class="n">use_dilation</span><span class="p">:</span>
+            <span class="n">base_kernel_size</span> <span class="o">=</span> <span class="mi">3</span>
+            <span class="n">main_kernel_size</span> <span class="o">=</span> <span class="p">[</span><span class="n">base_kernel_size</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">depth</span><span class="p">)</span> <span class="c1"># 3 3 3 3 2 2 2</span>
+            <span class="c1"># infering coresponding dilation for every kernel_size in pyramid block</span>
+            <span class="n">pyramid_dilation</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">((</span><span class="n">rf</span> <span class="o">-</span> <span class="n">base_kernel_size</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">base_kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+                                <span class="k">for</span> <span class="n">rf</span> <span class="ow">in</span> <span class="n">pyramid_kernel_size</span><span class="p">]</span> <span class="c1"># 3 2 1</span>
+            <span class="n">main_dilation</span> <span class="o">=</span> <span class="n">pyramid_dilation</span> <span class="o">+</span> <span class="p">[</span><span class="n">pyramid_dilation</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">depth</span> <span class="c1"># 3 2 1 1 1 1 1</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">pyramid_dilation</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">base_kernel_size</span><span class="p">,</span> <span class="n">dilation_rate</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span>
+                <span class="n">branches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">main_kernel_size</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pyramid_kernel_size</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="n">pyramid_kernel_size</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">depth</span><span class="p">)</span> <span class="c1"># [7533222]</span>
+            <span class="n">main_dilation</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">kernel_size</span> <span class="ow">in</span> <span class="n">pyramid_kernel_size</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span>
+                <span class="n">branches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="n">pyramid_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;layout&#39;</span><span class="p">:</span> <span class="n">main_layout</span><span class="p">,</span> <span class="s1">&#39;filters&#39;</span><span class="p">:</span> <span class="s1">&#39;same&#39;</span><span class="p">,</span> <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="n">main_kernel_size</span><span class="p">,</span>
+                        <span class="s1">&#39;strides&#39;</span><span class="p">:</span> <span class="n">main_strides</span><span class="p">,</span> <span class="s1">&#39;dilation_rate&#39;</span><span class="p">:</span> <span class="n">main_dilation</span><span class="p">,</span> <span class="s1">&#39;branch&#39;</span><span class="p">:</span> <span class="n">branches</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">bottleneck</span><span class="p">:</span>
+            <span class="n">bottleneck</span> <span class="o">=</span> <span class="mi">4</span> <span class="k">if</span> <span class="n">bottleneck</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">bottleneck</span>
+            <span class="n">out_filters</span> <span class="o">=</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">inner_filters</span> <span class="o">=</span> <span class="n">out_filters</span> <span class="o">//</span> <span class="n">bottleneck</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pyramid</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">inner_filters</span><span class="p">),</span>
+                                     <span class="n">pyramid_args</span><span class="p">,</span>
+                                     <span class="nb">dict</span><span class="p">(</span><span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">out_filters</span><span class="p">),</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pyramid</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">pyramid_args</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s1">&#39;pyramid_kernel_size&#39;</span><span class="p">:</span> <span class="n">pyramid_kernel_size</span><span class="p">,</span>
+            <span class="s1">&#39;bottleneck&#39;</span><span class="p">:</span> <span class="n">bottleneck</span><span class="p">,</span>
+            <span class="s1">&#39;use_dilation&#39;</span><span class="p">:</span> <span class="n">use_dilation</span><span class="p">,</span>
+            <span class="s1">&#39;factor&#39;</span><span class="p">:</span> <span class="n">factor</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="FPA.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.FPA.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attention</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">main</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pyramid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Combine</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">attention</span><span class="p">,</span> <span class="n">main</span><span class="p">])</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="n">layer_desc</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{class}</span><span class="s1">(pyramid_kernel_size=</span><span class="si">{pyramid_kernel_size}</span><span class="s1">, bottleneck=</span><span class="si">{bottleneck}</span><span class="s1">, &#39;</span>
+                      <span class="s1">&#39;use_dilation=</span><span class="si">{use_dilation}</span><span class="s1">, factor=</span><span class="si">{factor}</span><span class="s1">)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">layer_desc</span></div>
+
+
+
+<div class="viewcode-block" id="SelectiveKernelConv"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelectiveKernelConv">[docs]</a><span class="k">class</span> <span class="nc">SelectiveKernelConv</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Selective Kernel Convolution.</span>
+
+<span class="sd">    Xiang Li. et al. &quot;&#39;Selective Kernel Networks</span>
+<span class="sd">    &lt;https://arxiv.org/abs/1903.06586&gt;&#39;_&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kernels : tuple of int</span>
+<span class="sd">        Tuple of kernel_sizes for branches in split part.</span>
+<span class="sd">        Default is `(3, 5)`.</span>
+<span class="sd">    use_dilation : bool</span>
+<span class="sd">        If ``True``, then convolution in split part uses instead of the `kernel_size`</span>
+<span class="sd">        from the `kernels` the `kernel_size=3` and the appropriate dilation rate.</span>
+<span class="sd">        If ``False``, then dilated convolutions are not used. Default is ``False``.</span>
+<span class="sd">    min_units: int</span>
+<span class="sd">        Minimum length of fused vector. Default is 32.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">kernels</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+                 <span class="n">use_dilation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">min_units</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.conv_block</span> <span class="kn">import</span> <span class="n">ConvBlock</span> <span class="c1"># can&#39;t be imported in the file beginning due to recursive imports</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filters</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">filters</span> <span class="o">=</span> <span class="n">safe_eval</span><span class="p">(</span><span class="n">filters</span><span class="p">,</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+
+        <span class="n">num_kernels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernels</span><span class="p">)</span>
+        <span class="n">num_dims</span> <span class="o">=</span> <span class="n">get_num_dims</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_dilation</span><span class="p">:</span>
+            <span class="n">dilations</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">kernel</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">kernel</span> <span class="ow">in</span> <span class="n">kernels</span><span class="p">)</span>
+            <span class="n">kernels</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="o">*</span> <span class="n">num_kernels</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dilations</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="n">num_kernels</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s1">&#39;in_filters&#39;</span><span class="p">:</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+            <span class="s1">&#39;out_filters&#39;</span><span class="p">:</span> <span class="n">filters</span><span class="p">,</span>
+            <span class="s1">&#39;kernel_sizes&#39;</span><span class="p">:</span> <span class="n">kernels</span><span class="p">,</span>
+            <span class="s1">&#39;dilations&#39;</span><span class="p">:</span> <span class="n">dilations</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">split_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="n">tensors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">dilation_rate</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">kernels</span><span class="p">,</span> <span class="n">dilations</span><span class="p">):</span>
+            <span class="n">branch</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;cna&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">,</span>
+                               <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+                               <span class="n">dilation_rate</span><span class="o">=</span><span class="n">dilation_rate</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">split_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span>
+            <span class="n">tensors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">branch</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">combine</span> <span class="o">=</span> <span class="n">Combine</span><span class="p">(</span><span class="n">op</span><span class="o">=</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">tensors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fuse</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">tensor</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;Vfna&gt;&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;max(same // </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ratio</span><span class="p">,</span> <span class="n">min_units</span><span class="p">),</span>
+                              <span class="n">dim</span><span class="o">=</span><span class="n">num_dims</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">)</span>
+
+        <span class="n">fused_tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuse</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attention_branches</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">Conv</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">fused_tensor</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_kernels</span><span class="p">)])</span>
+
+<div class="viewcode-block" id="SelectiveKernelConv.forward"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SelectiveKernelConv.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_layers</span><span class="p">]</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">tensors</span><span class="p">)</span>
+        <span class="n">fused_tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fuse</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="n">attention_vectors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">attention</span><span class="p">(</span><span class="n">fused_tensor</span><span class="p">)</span> <span class="k">for</span> <span class="n">attention</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attention_branches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">attention_vectors</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)(</span><span class="n">attention_vectors</span><span class="p">)</span>
+        <span class="n">attention_vectors</span> <span class="o">=</span> <span class="p">[</span><span class="n">attention_vectors</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">attention_vectors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])]</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor</span> <span class="o">*</span> <span class="n">attention</span> <span class="k">for</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">attention</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tensors</span><span class="p">,</span> <span class="n">attention_vectors</span><span class="p">)]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="n">layer_desc</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{class}</span><span class="s1">(</span><span class="si">{in_filters}</span><span class="s1">, </span><span class="si">{out_filters}</span><span class="s1">, &#39;</span>
+                      <span class="s1">&#39;kernel_sizes=</span><span class="si">{kernel_sizes}</span><span class="s1">, dilations=</span><span class="si">{dilations}</span><span class="s1">)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">layer_desc</span></div>
+
+
+<span class="k">class</span> <span class="nc">SplitAttentionConv</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Split Attention.</span>
+
+<span class="sd">    Hang Zhang et al. &quot;`ResNeSt: Split-Attention Networks</span>
+<span class="sd">    &lt;https://arxiv.org/abs/2004.08955&gt;`_&quot;</span>
+
+<span class="sd">    This block contains the following operations:</span>
+<span class="sd">    * First of all, we split feature maps into `cardinality`*`radix` groups and apply convolution with</span>
+<span class="sd">      kernel_size=`kernel_size` with normalization and activation (these operations are controlled by the `layout`)</span>
+<span class="sd">    * Then we split the result into `cardinality` groups.</span>
+<span class="sd">    * Then attention takes place:</span>
+<span class="sd">        * Here, we summarize feature maps by groups and apply Global Average Pooling.</span>
+<span class="sd">        * Then we apply two 1x1 convolutions with groups=`cardinality`. The number of filters in the first</span>
+<span class="sd">            convolution is `filters`*`radix` // `reduction_factor`.</span>
+<span class="sd">        * Then we use RadixSoftmax, which applies a softmax for feature maps grouped into `cardinality` groups.</span>
+<span class="sd">        * Then, the resulting groups are summed up with feature maps before the attention part.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    radix : int</span>
+<span class="sd">        The number of splits within a cardinal group. Default is 2.</span>
+<span class="sd">    cardinality : int</span>
+<span class="sd">        The number of feature-map groups. Given feature-map is splitted to groups with same size. Default is 1.</span>
+<span class="sd">    reduction_factor : int</span>
+<span class="sd">        Factor of the filter reduction during :class:`~.attention.SplitAttentionConv`. Default is 1.</span>
+<span class="sd">    scaling_factor : int</span>
+<span class="sd">        Factor increasing the number of filters after ResNeSt block. Thus, the number of output filters is</span>
+<span class="sd">        `filters`*`scaling_factor`. Default 1.</span>
+<span class="sd">    kwargs : dict</span>
+<span class="sd">        Other named arguments only for the first :class:`~.layers.ConvBlock`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s1">&#39;cna&#39;</span><span class="p">,</span> <span class="n">radix</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">reduction_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">scaling_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">strides</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">.conv_block</span> <span class="kn">import</span> <span class="n">ConvBlock</span> <span class="c1"># can&#39;t be imported in the file beginning due to recursive imports</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radix</span> <span class="o">=</span> <span class="n">radix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">=</span> <span class="n">cardinality</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">filters</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">radix</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inner_filters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">//</span> <span class="n">reduction_factor</span>
+        <span class="n">channel_dim</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s1">&#39;in_filters&#39;</span><span class="p">:</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+            <span class="s1">&#39;out_filters&#39;</span><span class="p">:</span> <span class="n">filters</span><span class="o">*</span><span class="n">scaling_factor</span><span class="p">,</span>
+            <span class="s1">&#39;radix&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">radix</span><span class="p">,</span>
+            <span class="s1">&#39;cardinality&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">,</span>
+            <span class="s1">&#39;reduction_factor&#39;</span><span class="p">:</span> <span class="n">reduction_factor</span><span class="p">,</span>
+            <span class="s1">&#39;scaling_factor&#39;</span><span class="p">:</span> <span class="n">scaling_factor</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inner_radix_conv</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span>
+                                          <span class="n">groups</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">radix</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+                                          <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner_radix_conv</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">inputs</span>
+
+        <span class="n">rchannel</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">radix</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">splitted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">rchannel</span><span class="o">//</span><span class="bp">self</span><span class="o">.</span><span class="n">radix</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">splitted</span><span class="p">)</span>
+
+        <span class="n">inner_conv1d_layout</span> <span class="o">=</span> <span class="s1">&#39;V&gt;&#39;</span> <span class="o">+</span> <span class="s1">&#39;cnac&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avgpool_conv1d</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">inner_conv1d_layout</span><span class="p">,</span>
+                                        <span class="n">filters</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">inner_filters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">],</span>
+                                        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">channel_dim</span><span class="p">,</span>
+                                        <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avgpool_conv1d</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rsoftmax</span> <span class="o">=</span> <span class="n">RadixSoftmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">radix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">)</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rsoftmax</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">radix</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">rchannel</span><span class="o">//</span><span class="bp">self</span><span class="o">.</span><span class="n">radix</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">inp</span><span class="o">*</span><span class="n">split</span> <span class="k">for</span> <span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">split</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">splitted</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">*</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner_radix_conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">rchannel</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">radix</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">splitted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">rchannel</span><span class="o">//</span><span class="bp">self</span><span class="o">.</span><span class="n">radix</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">concatted</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">splitted</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">concatted</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">att</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avgpool_conv1d</span><span class="p">(</span><span class="n">concatted</span><span class="p">)</span>
+        <span class="n">att</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rsoftmax</span><span class="p">(</span><span class="n">att</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">radix</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">attens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">att</span><span class="p">,</span> <span class="n">rchannel</span><span class="o">//</span><span class="bp">self</span><span class="o">.</span><span class="n">radix</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">att</span><span class="o">*</span><span class="n">split</span> <span class="k">for</span> <span class="p">(</span><span class="n">att</span><span class="p">,</span> <span class="n">split</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">attens</span><span class="p">,</span> <span class="n">splitted</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">att</span> <span class="o">*</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+        <span class="n">layer_desc</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{class}</span><span class="s1">(</span><span class="si">{in_filters}</span><span class="s1">, </span><span class="si">{out_filters}</span><span class="s1">, &#39;</span>
+                      <span class="s1">&#39;radix=</span><span class="si">{radix}</span><span class="s1">, cardinality=</span><span class="si">{cardinality}</span><span class="s1">, &#39;</span>
+                      <span class="s1">&#39;reduction_factor=</span><span class="si">{reduction_factor}</span><span class="s1">, &#39;</span>
+                      <span class="s1">&#39;scaling_factor=</span><span class="si">{scaling_factor}</span><span class="s1">)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">desc_kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">layer_desc</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2017-2021, Analysis Center.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

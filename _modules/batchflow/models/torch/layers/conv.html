@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>batchflow.models.torch.layers.conv &mdash; BatchFlow 0.5.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../../index.html" class="icon icon-home"> BatchFlow
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../intro/intro.html">A short introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../intro/classes.html">Classes and capabilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/batchflow.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">BatchFlow</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>batchflow.models.torch.layers.conv</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for batchflow.models.torch.layers.conv</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Convolutional layers. &quot;&quot;&quot;</span>
+<span class="c1">#pylint: disable=not-callable</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">get_num_channels</span><span class="p">,</span> <span class="n">get_num_dims</span><span class="p">,</span> <span class="n">safe_eval</span><span class="p">,</span> <span class="n">calc_padding</span>
+
+
+<span class="k">class</span> <span class="nc">BaseConv</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An universal module for plain and transposed convolutions. &quot;&quot;&quot;</span>
+    <span class="n">LAYERS</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">TRANSPOSED</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+                 <span class="n">dilation_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filters</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">filters</span> <span class="o">=</span> <span class="n">safe_eval</span><span class="p">(</span><span class="n">filters</span><span class="p">,</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;in_channels&#39;</span><span class="p">:</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+            <span class="s1">&#39;out_channels&#39;</span><span class="p">:</span> <span class="n">filters</span><span class="p">,</span>
+            <span class="s1">&#39;groups&#39;</span><span class="p">:</span> <span class="n">groups</span><span class="p">,</span>
+            <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="n">kernel_size</span><span class="p">,</span>
+            <span class="s1">&#39;dilation&#39;</span><span class="p">:</span> <span class="n">dilation_rate</span><span class="p">,</span>
+            <span class="s1">&#39;stride&#39;</span><span class="p">:</span> <span class="n">strides</span><span class="p">,</span>
+            <span class="s1">&#39;bias&#39;</span><span class="p">:</span> <span class="n">bias</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">calc_padding</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">transposed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">TRANSPOSED</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">args</span><span class="p">[</span><span class="s1">&#39;padding&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">args</span><span class="p">[</span><span class="s1">&#39;padding&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">padding</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LAYERS</span><span class="p">[</span><span class="n">get_num_dims</span><span class="p">(</span><span class="n">inputs</span><span class="p">)](</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Conv"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.Conv">[docs]</a><span class="k">class</span> <span class="nc">Conv</span><span class="p">(</span><span class="n">BaseConv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Multi-dimensional convolutional layer. &quot;&quot;&quot;</span>
+    <span class="n">LAYERS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">TRANSPOSED</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="ConvTranspose"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvTranspose">[docs]</a><span class="k">class</span> <span class="nc">ConvTranspose</span><span class="p">(</span><span class="n">BaseConv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Multi-dimensional transposed convolutional layer. &quot;&quot;&quot;</span>
+    <span class="n">LAYERS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose1d</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose3d</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">TRANSPOSED</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+
+<span class="k">class</span> <span class="nc">BaseDepthwiseConv</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An universal module for plain and transposed depthwise convolutions. &quot;&quot;&quot;</span>
+    <span class="n">LAYER</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+                 <span class="n">dilation_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">depth_multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;filters&#39;</span><span class="p">:</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="o">*</span> <span class="n">depth_multiplier</span><span class="p">,</span>
+            <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="n">kernel_size</span><span class="p">,</span>
+            <span class="s1">&#39;groups&#39;</span><span class="p">:</span> <span class="n">get_num_channels</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span>
+            <span class="s1">&#39;strides&#39;</span><span class="p">:</span> <span class="n">strides</span><span class="p">,</span>
+            <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="n">padding</span><span class="p">,</span>
+            <span class="s1">&#39;dilation_rate&#39;</span><span class="p">:</span> <span class="n">dilation_rate</span><span class="p">,</span>
+            <span class="s1">&#39;bias&#39;</span><span class="p">:</span> <span class="n">bias</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LAYER</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DepthwiseConv"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.DepthwiseConv">[docs]</a><span class="k">class</span> <span class="nc">DepthwiseConv</span><span class="p">(</span><span class="n">BaseDepthwiseConv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Multi-dimensional depthwise convolutional layer. &quot;&quot;&quot;</span>
+    <span class="n">LAYER</span> <span class="o">=</span> <span class="n">Conv</span></div>
+
+
+<div class="viewcode-block" id="DepthwiseConvTranspose"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.DepthwiseConvTranspose">[docs]</a><span class="k">class</span> <span class="nc">DepthwiseConvTranspose</span><span class="p">(</span><span class="n">BaseDepthwiseConv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Multi-dimensional transposed depthwise convolutional layer. &quot;&quot;&quot;</span>
+    <span class="n">LAYER</span> <span class="o">=</span> <span class="n">ConvTranspose</span></div>
+
+
+
+<span class="k">class</span> <span class="nc">BaseSeparableConv</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An universal module for plain and transposed separable convolutions. &quot;&quot;&quot;</span>
+    <span class="n">LAYER</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+                 <span class="n">dilation_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">depth_multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">LAYER</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">strides</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation_rate</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">depth_multiplier</span><span class="p">,</span> <span class="n">inputs</span><span class="p">),</span>
+            <span class="n">Conv</span><span class="p">(</span><span class="n">filters</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">dilation_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SeparableConv"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SeparableConv">[docs]</a><span class="k">class</span> <span class="nc">SeparableConv</span><span class="p">(</span><span class="n">BaseSeparableConv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Multi-dimensional separable convolutional layer. &quot;&quot;&quot;</span>
+    <span class="n">LAYER</span> <span class="o">=</span> <span class="n">DepthwiseConv</span></div>
+
+
+<div class="viewcode-block" id="SeparableConvTranspose"><a class="viewcode-back" href="../../../../../api/batchflow.models.torch.layers.html#batchflow.models.torch.layers.SeparableConvTranspose">[docs]</a><span class="k">class</span> <span class="nc">SeparableConvTranspose</span><span class="p">(</span><span class="n">BaseSeparableConv</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Multi-dimensional separable depthwise convolutional layer. &quot;&quot;&quot;</span>
+    <span class="n">LAYER</span> <span class="o">=</span> <span class="n">DepthwiseConvTranspose</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2017-2021, Analysis Center.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,939 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>TorchModel &mdash; BatchFlow 0.5.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="VGG" href="batchflow.models.torch.vgg.html" />
+    <link rel="prev" title="Models" href="batchflow.models.torch.models.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BatchFlow
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro/intro.html">A short introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../intro/classes.html">Classes and capabilities</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../intro/dsindex.html">Index</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/dataset.html">Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/batch.html">Batch class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/images_batch.html">Batch class for handling images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/pipeline.html">Pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/named_expr.html">Named expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/parallel.html">Within batch parallelism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/prefetch.html">Inter-batch parallelism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/models.html">Working with models</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../intro/torch_models.html">Torch models</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="batchflow.models.torch.models.html">Models</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">TorchModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="batchflow.models.torch.vgg.html">VGG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="batchflow.models.torch.resnet.html">ResNet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="batchflow.models.torch.unet.html">UNet</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/research.html">Research</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../intro/model_zoo.html">Model zoo</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="batchflow.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BatchFlow</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../intro/classes.html">Classes and capabilities</a> &raquo;</li>
+        
+          <li><a href="../intro/torch_models.html">Torch models</a> &raquo;</li>
+        
+          <li><a href="batchflow.models.torch.models.html">Models</a> &raquo;</li>
+        
+      <li>TorchModel</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/api/batchflow.models.torch.base.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-batchflow.models.torch.base">
+<span id="torchmodel"></span><h1>TorchModel<a class="headerlink" href="#module-batchflow.models.torch.base" title="Permalink to this headline">¶</a></h1>
+<p>Eager version of TorchModel.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">TorchModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="batchflow.models.html#batchflow.models.BaseModel" title="batchflow.models.base.BaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">batchflow.models.base.BaseModel</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">batchflow.models.torch.mixins.ExtractionMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">batchflow.models.torch.mixins.OptimalBatchSizeMixin</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">batchflow.models.torch.mixins.VisualizationMixin</span></code></p>
+<p>Base class for Torch models.</p>
+<dl>
+<dt>Implements two main logics:</dt><dd><ul class="simple">
+<li><p>the first is to build PyTorch model as a sequence of configurable nn.Modules</p></li>
+<li><p>the second is to make infrastructure for model training, e.g. loss, optimizer and decay,</p></li>
+</ul>
+<p>and provide methods for the model training and inference.</p>
+</dd>
+</dl>
+<p>In the <cite>examples</cite> section you can find a drop-in template for your model.</p>
+<p>All of the parameters for both logics are defined in the config, supplied at initialization.
+The detailed description can be seen at <cite>parameters</cite> section; here, we describe the overall structure of keys:</p>
+<blockquote>
+<div><ul>
+<li><dl>
+<dt>global <cite>cuda</cite> parameters:</dt><dd><ul class="simple">
+<li><p><cite>device</cite> sets the desired accelerator to use. Default is to use the single best available (GPU over CPU).</p></li>
+<li><p><cite>benchmark</cite> defines the <cite>cuda</cite> behavior: trade some GPU memory to get minor (~15%) acceleration.</p></li>
+</ul>
+<p>Default is True.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>PyTorch model configuration.</dt><dd><ul class="simple">
+<li><p><cite>order</cite> defines the sequence of blocks to build the model from. Default is initial_block -&gt; body -&gt; head.</p></li>
+</ul>
+<p>Separation of the NN into multiple blocks is just for convenience, so we can split
+the preprocessing, main body of the model, and postprocessing into individual parts.
+In the simplest case, each element is a string that points to other key in the config,
+which is used to create a <a class="reference internal" href="batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvBlock" title="batchflow.models.torch.layers.ConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code></a>.
+Check the detailed description for more complex cases.
+- <cite>initial_block</cite>, <cite>body</cite>, <cite>head</cite> are parameters for this respective parts of the neural network.
+Defaults are empty layouts, meaning no operations.
+- <cite>common</cite> parameters are passed to each of the neural network parts. Default is empty.
+- <cite>output</cite> defines additional operations, applied to the output after loss computation.
+By default, we have <cite>predictions</cite>, <cite>predictions_{i}</cite> and <cite>predictions_{i}_{j}</cite> aliases.
+Note that these do not interfere with loss computation and are here only for convenience.
+- <cite>init_weights</cite> allows to initialize weights.</p>
+</dd>
+</dl>
+</li>
+<li><p>shapes info. If fully provided, used to initialize the model. If no shapes are given in the config,</p></li>
+</ul>
+<p>the model is created at the time of the first <cite>train</cite> call by looking at the actual batch data and shapes.
+Keys are <cite>inputs_shapes</cite>, <cite>targets_shapes</cite>, <cite>classes</cite>, and <cite>placeholder_batch_size</cite>.
+By default, no shapes are set in the config.</p>
+<ul>
+<li><dl>
+<dt>train and inference common parameters:</dt><dd><ul class="simple">
+<li><p><cite>amp</cite> turns on/off automatic mixed precision, which allows to perform some of the operations in <cite>float16</cite>.</p></li>
+</ul>
+<p>Default is True.
+- <cite>microbatch_size</cite> allows to split the training/inference batches in chunks (microbatches) and process
+them sequentially. During train, we apply gradients only after all microbatches from the batch are used.
+Default is to not use microbatching.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>train only parameters:</dt><dd><ul class="simple">
+<li><p><cite>sync_frequency</cite> to apply gradients only once in a <cite>sync_frequency</cite> calls to <cite>train</cite> method.</p></li>
+</ul>
+<p>Default is to apply gradients after each <cite>train</cite> iteration.
+- <cite>callbacks</cite> to apply operations at the end of each iteration. Default is no callbacks.
+- <cite>sam_rho</cite>, <cite>sam_individual_norm</cite> to use sharpness-aware minimization. Default is to not use SAM at all.
+- <cite>profile</cite> to get detailed report of model performance. Default is False.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>infrastructure for training:</dt><dd><ul class="simple">
+<li><p><cite>loss</cite>. No default value, so this key is required.</p></li>
+<li><p><cite>optimizer</cite>. Default is <cite>Adam</cite>.</p></li>
+<li><p><cite>decay</cite>. Default is to not use learning rate decay.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>We recommend looking at <a class="reference internal" href="batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvBlock" title="batchflow.models.torch.layers.ConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code></a> to learn about parameters for model building blocks,
+and at <code class="xref py py-class docutils literal notranslate"><span class="pre">EncoderDecoder</span></code> which allows more sophisticated logic of block chaining.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (dict, <code class="xref py py-class docutils literal notranslate"><span class="pre">Config</span></code>) – Configuration of model creation. Below are the valid keys.</p></li>
+<li><p><strong>parameters</strong> (<em># Global</em>) – </p></li>
+<li><p><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>torch.device</em><em> or </em><em>sequence</em>) – Device to use for model, training and inference.
+If str, a device name (e.g. <code class="docutils literal notranslate"><span class="pre">'cpu'</span></code> or <code class="docutils literal notranslate"><span class="pre">'gpu:0'</span></code>). Regular expressions are also allowed (e.g. <code class="docutils literal notranslate"><span class="pre">'gpu:*'</span></code>).
+If torch.device, then device to be used.
+If sequence, then each entry must be in one of previous formats, and batch data is paralleled across them.
+Default behaviour is to use one (and only one) device of the best available type (priority to GPU over CPU).</p></li>
+<li><p><strong>benchmark</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether to optimize network’s forward pass during the first batch.
+Leverages the memory-speed trade-off: the network may use more GPU memory to compute predictions faster.
+Speeds up the forward pass by ~15% if shapes of inputs are constant.
+Make sure not to use different shapes of inputs.</p></li>
+</ul>
+</dd>
+</dl>
+<p># Model building configuration
+order : sequence</p>
+<blockquote>
+<div><p>Defines sequence of network blocks in the architecture. Default is initial_block -&gt; body -&gt; head.
+Each element of the sequence must be either a string, a tuple or a dict.
+If string, then it is used as name of method to use, as config key to use, as name in model repr.
+For example, <code class="docutils literal notranslate"><span class="pre">'initial_block'</span></code> stands for using <code class="docutils literal notranslate"><span class="pre">self.initial_block</span></code> with config[<cite>initial_block</cite>]
+as parameters, and model representation would show this part of network as <cite>initial_block</cite>.
+If tuple, then it must have three elements: (block_name, config_name, method).
+If dict, then it must contain three keys: <cite>block_name</cite>, <cite>config_name</cite>, <cite>method</cite>.
+In cases of tuple and dict, <cite>method</cite> can also be callable.</p>
+</div></blockquote>
+<dl>
+<dt>initial_block<span class="classifier">dict</span></dt><dd><p>User-defined module or parameters for the input block, usually <a class="reference internal" href="batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvBlock" title="batchflow.models.torch.layers.ConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code></a> parameters.</p>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">{'initial_block':</span> <span class="pre">dict(layout='nac</span> <span class="pre">nac',</span> <span class="pre">filters=64,</span> <span class="pre">kernel_size=[7,</span> <span class="pre">3],</span> <span class="pre">strides=[1,</span> <span class="pre">2])}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'initial_block':</span> <span class="pre">MyCustomModule(some_param=1,</span> <span class="pre">another_param=2)}</span></code></p></li>
+</ul>
+</dd>
+<dt>body<span class="classifier">dict or nn.Module</span></dt><dd><p>User-defined module or parameters for the base network layers,
+usually <a class="reference internal" href="batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvBlock" title="batchflow.models.torch.layers.ConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code></a> parameters.</p>
+</dd>
+<dt>head<span class="classifier">dict or nn.Module</span></dt><dd><p>User-defined module or parameters for the prediction layers,
+usually <a class="reference internal" href="batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvBlock" title="batchflow.models.torch.layers.ConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code></a> parameters.</p>
+</dd>
+<dt>common<span class="classifier">dict</span></dt><dd><p>Default parameters for all blocks (see <a class="reference internal" href="batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvBlock" title="batchflow.models.torch.layers.ConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code></a>).</p>
+</dd>
+<dt>output<span class="classifier">str, list or dict</span></dt><dd><p>Auxiliary operations to apply to the network predictions.
+If dict, then should have the same length and order as network predictions.
+Each key defines this prediction name, each value should be a str/list of operations to apply to this tensor.
+For example, <code class="docutils literal notranslate"><span class="pre">{'my_prediction'</span> <span class="pre">:</span> <span class="pre">['sigmoid',</span> <span class="pre">my_callable,</span> <span class="pre">'softmax]}</span></code>.
+Generated outputs are available as <cite>my_prediction_{j}</cite>, <cite>my_prediction_sigmoid</cite>,
+and also by alias <cite>predictions_{i}_{j}</cite>, where <cite>i</cite> is the tensor ordinal and <cite>j</cite> is operation ordinal.</p>
+<p>If list or str, then default prefix <cite>‘’</cite> is used.
+See <code class="xref py py-meth docutils literal notranslate"><span class="pre">TorchModel.output()</span></code> for more details.</p>
+</dd>
+<dt>init_weights<span class="classifier">callable, ‘best_practice_resnet’, or None</span></dt><dd><p>Model weights initilaization.
+If None, then default initialization is used.
+If ‘best_practice_resnet’, then common used non-default initialization is used.
+If callable, then callable applied to each layer.</p>
+<p>Examples:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'init_weights':</span> <span class="pre">'best_practice_resnet'}</span></code></p></li>
+<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">callable_init</span><span class="p">(</span><span class="n">module</span><span class="p">):</span> <span class="c1"># example of a callable for init</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">):</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">kaiming_normal_</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init_weights&#39;</span><span class="p">:</span> <span class="n">callable_init</span><span class="p">}</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<p># Shapes: optional
+inputs_shapes : sequence</p>
+<blockquote>
+<div><p>Shapes of the input tensors without the batch size.
+Must be a tuple (one input) or sequence of tuples (multiple inputs) with shapes.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>targets_shapes<span class="classifier">sequence</span></dt><dd><p>Shapes of the target tensors without the batch size.
+Must be a tuple (one target) or sequence of tuples (multiple targets) with shapes.
+Available as <cite>targets_shapes</cite> parameter in the <cite>head</cite> block.</p>
+</dd>
+<dt>classes<span class="classifier">int or sequence of ints</span></dt><dd><p>Number of desired classes in the output tensor. Available as <cite>classes</cite> parameter in the <cite>head</cite> block.</p>
+</dd>
+<dt>placeholder_batch_size<span class="classifier">int</span></dt><dd><p>If <cite>inputs</cite> is specified with all the required shapes, then it serves as size of batch dimension during
+placeholder (usually np.ndarrays with zeros) creation. Default value is 2.</p>
+</dd>
+</dl>
+<p># Train and inference behavior
+amp : bool</p>
+<blockquote>
+<div><p>Whether to use automated mixed precision during model training and inference. Default is True.
+The output type of predictions remains float32. Can be changed in <cite>train</cite> and <cite>predict</cite> arguments.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>microbatch_size<span class="classifier">int, bool or None</span></dt><dd><p>Also known as virtual batch. Allows to process given data sequentially,
+accumulating gradients from microbatches and applying them once in the end.
+If int, then size of chunks to split every batch into.
+If False or None, then this feature is not used. Default is not to use microbatching.
+Can be changed in <cite>train</cite> and <cite>predict</cite> arguments.</p>
+</dd>
+</dl>
+<p># Additional train modifications
+sync_frequency : int</p>
+<blockquote>
+<div><p>How often to apply accumulated gradients to the weights. Default value is to apply them after each batch.
+Can be changed in <cite>train</cite> and <cite>predict</cite> arguments.</p>
+</div></blockquote>
+<dl>
+<dt>callbacks<span class="classifier">sequence of <cite>:class:callbacks.BaseCallback</cite></span></dt><dd><p>Callbacks to call at the end of each training iteration.</p>
+</dd>
+<dt>sam_rho<span class="classifier">float</span></dt><dd><p>Foret P. et al. “<a class="reference external" href="https://arxiv.org/abs/2010.01412">Sharpness-Aware Minimization for Efficiently Improving Generalization</a>”.
+If evaluates to False, then SAM is not used.
+If float, then controls the size of neighborhood (check the paper for details).</p>
+</dd>
+<dt>sam_individual_norm<span class="classifier">bool</span></dt><dd><p>If True, then each gradient is scaled according to its own L2 norm.
+If False, then one common gradient norm is computed and used as a scaler for all gradients.</p>
+</dd>
+<dt>profile<span class="classifier">bool</span></dt><dd><p>Whether to collect stats of model training timings.
+If True, then stats can be accessed via <cite>profile_info</cite> attribute or <a class="reference internal" href="#batchflow.models.torch.base.TorchModel.show_profile_info" title="batchflow.models.torch.base.TorchModel.show_profile_info"><code class="xref py py-meth docutils literal notranslate"><span class="pre">show_profile_info()</span></code></a> method.</p>
+</dd>
+</dl>
+<p># Infrastructure
+loss : str, dict</p>
+<blockquote>
+<div><p>Loss function, might be defined in multiple formats.</p>
+<p>If str, then short <code class="docutils literal notranslate"><span class="pre">name</span></code>.
+If dict, then <code class="docutils literal notranslate"><span class="pre">{'name':</span> <span class="pre">name,</span> <span class="pre">**kwargs}</span></code>.</p>
+<dl class="simple">
+<dt>Name must be one of:</dt><dd><ul class="simple">
+<li><p>short name (e.g. <code class="docutils literal notranslate"><span class="pre">'mse'</span></code>, <code class="docutils literal notranslate"><span class="pre">'ce'</span></code>, <code class="docutils literal notranslate"><span class="pre">'l1'</span></code>, <code class="docutils literal notranslate"><span class="pre">'cos'</span></code>, <code class="docutils literal notranslate"><span class="pre">'hinge'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'huber'</span></code>, <code class="docutils literal notranslate"><span class="pre">'logloss'</span></code>, <code class="docutils literal notranslate"><span class="pre">'dice'</span></code>)</p></li>
+<li><p>a class name from <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#loss-functions">torch losses</a>
+(e.g. <code class="docutils literal notranslate"><span class="pre">'PoissonNLL'</span></code> or <code class="docutils literal notranslate"><span class="pre">'TripletMargin'</span></code>)</p></li>
+<li><p>an instance or constructor of <cite>:class:torch.nn.Module</cite></p></li>
+<li><p>callable</p></li>
+</ul>
+</dd>
+</dl>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">{'loss':</span> <span class="pre">'mse'}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'loss':</span> <span class="pre">{'name':</span> <span class="pre">'KLDiv',</span> <span class="pre">'reduction':</span> <span class="pre">'none'}}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'loss':</span> <span class="pre">{'name':</span> <span class="pre">MyCustomLoss,</span> <span class="pre">'epsilon':</span> <span class="pre">1e-6}}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'loss':</span> <span class="pre">my_custom_loss_fn}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'loss':</span> <span class="pre">my_custom_loss_class}</span></code></p></li>
+</ul>
+</div></blockquote>
+<dl>
+<dt>optimizer<span class="classifier">str, dict</span></dt><dd><p>Optimizer, might be defined in multiple formats.</p>
+<p>If str, then short <code class="docutils literal notranslate"><span class="pre">name</span></code>.
+If dict, then <code class="docutils literal notranslate"><span class="pre">{'name':</span> <span class="pre">name,</span> <span class="pre">**kwargs}</span></code>.</p>
+<dl class="simple">
+<dt>Name must be one of:</dt><dd><ul class="simple">
+<li><p>short name (e.g. <code class="docutils literal notranslate"><span class="pre">'Adam'</span></code>, <code class="docutils literal notranslate"><span class="pre">'Adagrad'</span></code>, any optimizer from
+<a class="reference external" href="https://pytorch.org/docs/stable/optim.html#algorithms">torch.optim</a>)</p></li>
+<li><p>a class with <code class="docutils literal notranslate"><span class="pre">Optimizer</span></code> interface</p></li>
+<li><p>a callable which takes model parameters and optional args</p></li>
+</ul>
+</dd>
+</dl>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">{'optimizer':</span> <span class="pre">'Adam'}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'optimizer':</span> <span class="pre">{'name':</span> <span class="pre">'SparseAdam',</span> <span class="pre">'lr':</span> <span class="pre">0.01}}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'optimizer':</span> <span class="pre">{'name':</span> <span class="pre">'Adagrad',</span> <span class="pre">'initial_accumulator_value':</span> <span class="pre">0.01}}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'optimizer':</span> <span class="pre">{'name':</span> <span class="pre">MyCustomOptimizer,</span> <span class="pre">'momentum':</span> <span class="pre">0.95}}</span></code></p></li>
+</ul>
+</dd>
+<dt>decay<span class="classifier">dict, list of dicts</span></dt><dd><p>The learning rate decay algorithm might be defined in multiple formats.
+All decays require to have ‘frequency’ as a key in a configuration dictionary.
+Parameter ‘frequency’ sets how often do decay step: at every <cite>‘frequency’</cite>
+iteration. Each decay might have optional parameters ‘first_iter’ and ‘last_iter’
+that defines the closed range of iterations where decay is at work.
+If you want to use a learning rate warmup and decay together,
+you should use a list of decays (see examples).</p>
+<p>If dict, then <code class="docutils literal notranslate"><span class="pre">{'name':</span> <span class="pre">name,</span> <span class="pre">**kwargs}</span></code>.
+If list, then each item is a dict of format described above.</p>
+<p>Name must be one of:</p>
+<ul class="simple">
+<li><p>a class name from <a class="reference external" href="https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate">torch.optim.lr_scheduler</a>
+(e.g. <code class="docutils literal notranslate"><span class="pre">'LambdaLR'</span></code>) except <code class="docutils literal notranslate"><span class="pre">'ReduceLROnPlateau'</span></code>.</p></li>
+<li><dl class="simple">
+<dt>short name (<code class="docutils literal notranslate"><span class="pre">'exp'</span></code> - ExponentialLR, <code class="docutils literal notranslate"><span class="pre">'lambda'</span></code> - LambdaLR, <code class="docutils literal notranslate"><span class="pre">'step'</span></code> - StepLR,</dt><dd><p><code class="docutils literal notranslate"><span class="pre">'multistep'</span></code> - MultiStepLR, <code class="docutils literal notranslate"><span class="pre">'cos'</span></code> - CosineAnnealingLR)</p>
+</dd>
+</dl>
+</li>
+<li><p>a class with <code class="docutils literal notranslate"><span class="pre">_LRScheduler</span></code> interface</p></li>
+<li><p>a callable which takes optimizer and optional args</p></li>
+</ul>
+<p>Examples:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'decay':</span> <span class="pre">{'name:</span> <span class="pre">'exp',</span> <span class="pre">'frequency':</span> <span class="pre">5,</span> <span class="pre">'first_iter':</span> <span class="pre">6,</span> <span class="pre">'last_iter':</span> <span class="pre">20}}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'decay':</span> <span class="pre">{'name':</span> <span class="pre">'StepLR',</span> <span class="pre">'steps_size':</span> <span class="pre">10000,</span> <span class="pre">'frequency':</span> <span class="pre">5}}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">{'decay':</span> <span class="pre">{'name':</span> <span class="pre">MyCustomDecay,</span> <span class="pre">'decay_rate':</span> <span class="pre">.5,</span> <span class="pre">'frequency':</span> <span class="pre">15,</span> <span class="pre">'first_iter':</span> <span class="pre">400}</span></code></p></li>
+<li><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;decay&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;last_iter&#39;</span><span class="p">:</span> <span class="mi">900</span><span class="p">},</span>
+           <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;exp&#39;</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="mf">0.96</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;first_iter&#39;</span><span class="p">:</span> <span class="mi">901</span><span class="p">}]</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<dl>
+<dt>segmentation_config = {</dt><dd><p># Model layout
+‘initial_block’: {‘layout’: ‘cna cna cnap’,                    # string layout: c=conv, n=BN, a=act, p=pool</p>
+<blockquote>
+<div><p>filters: [INT, INT, INT],                    # individual filters for each convolution
+‘kernel_size’: 3},                           # common kernel_size for all convolutions</p>
+</div></blockquote>
+<dl class="simple">
+<dt>‘body’: {‘base_block’: ResBlock,                               # in ConvBlock, we can use any nn.Module as base</dt><dd><p>‘filters’: INT, ‘kernel_size’: INT,
+‘downsample’: False, ‘attention’: ‘scse’},            # additional parameters of ResBlock module</p>
+</dd>
+</dl>
+<p>‘head’: {‘layout’ : ‘cna’, ‘filters’: 1},                      # postprocessing
+‘output’: ‘sigmoid’,                                           # can get <cite>sigmoid</cite> output in the <cite>predict</cite></p>
+<p># Train configuration
+‘loss’: ‘bdice’,                                               # binary dice coefficient as loss function
+‘optimizer’: {‘name’: ‘Adam’, ‘lr’: 0.01,},
+‘decay’: {‘name’: ‘exp’, ‘gamma’: 0.9, ‘frequency’: 100},
+‘microbatch_size’: 16,                                         # size of microbatches at training</p>
+</dd>
+</dl>
+<p>}</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.PRESERVE">
+<span class="sig-name descname"><span class="pre">PRESERVE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['full_config',</span> <span class="pre">'config',</span> <span class="pre">'model',</span> <span class="pre">'inputs_shapes',</span> <span class="pre">'targets_shapes',</span> <span class="pre">'classes',</span> <span class="pre">'loss',</span> <span class="pre">'optimizer',</span> <span class="pre">'decay',</span> <span class="pre">'decay_step',</span> <span class="pre">'sync_counter',</span> <span class="pre">'microbatch_size',</span> <span class="pre">'iteration',</span> <span class="pre">'last_train_info',</span> <span class="pre">'last_predict_info',</span> <span class="pre">'lr_list',</span> <span class="pre">'syncs',</span> <span class="pre">'decay_iters',</span> <span class="pre">'_loss_list',</span> <span class="pre">'loss_list',</span> <span class="pre">'operations']</span></em><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.PRESERVE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the instance: make the config, attributes, and, if possible, PyTorch model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the underlying model and all the infrastructure. Use to create model from scratch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.default_config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">default_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.default_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.default_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define model defaults.</p>
+<p>Put here all constants (like the number of filters, kernel sizes, block layouts, strides, etc)
+specific to the model, but independent of anything else (like image shapes, number of classes, etc).</p>
+<p>Don’t forget to use the default config from parent class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.combine_configs">
+<span class="sig-name descname"><span class="pre">combine_configs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.combine_configs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.combine_configs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine default configuration and the external one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.update_config">
+<span class="sig-name descname"><span class="pre">update_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.update_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.update_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update config with instance attributes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.parse_attributes">
+<span class="sig-name descname"><span class="pre">parse_attributes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.parse_attributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.parse_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse instance attributes from config.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.make_placeholder_data">
+<span class="sig-name descname"><span class="pre">make_placeholder_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.make_placeholder_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.make_placeholder_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a sequence of tensor, based on the parsed <cite>inputs_shapes</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.make_infrastructure">
+<span class="sig-name descname"><span class="pre">make_infrastructure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.make_infrastructure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.make_infrastructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create loss, optimizer and decay, required for training the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.make_loss">
+<span class="sig-name descname"><span class="pre">make_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.make_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.make_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set model loss. Changes the <cite>loss</cite> attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.make_optimizer">
+<span class="sig-name descname"><span class="pre">make_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.make_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.make_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set model optimizer. Changes the <cite>optimizer</cite> attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.make_decay">
+<span class="sig-name descname"><span class="pre">make_decay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.make_decay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.make_decay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set model decay. Changes the <cite>decay</cite> and <cite>decay_step</cite> attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.set_model">
+<span class="sig-name descname"><span class="pre">set_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.set_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.set_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the underlying PyTorch model to a supplied one and update training infrastructure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.build_model">
+<span class="sig-name descname"><span class="pre">build_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.build_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.build_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the instance of PyTorch model by chaining multiple blocks sequentially.
+After it, create training infrastructure (loss, optimizer, decay).</p>
+<p>The order is defined by <cite>order</cite> key in the config, which is [<cite>initial_block</cite>, <cite>body</cite>, <cite>head</cite>] by default.
+Each item in <cite>order</cite> should describe the block name, the config name and method to create. It can be a:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>string, then we use it as name, config key and method name</p></li>
+<li><p>tuple of three elements, which are name, config key and method name or callable</p></li>
+<li><p>dictionary with three items, which are <cite>block_name</cite>, <cite>config_name</cite> and <cite>method</cite>.</p></li>
+</ul>
+<p>The <cite>block_name</cite> is used as the identifier in resulting model, i.e. <cite>model.body</cite>, <cite>model.head</cite>.
+The <cite>config_name</cite> is used to retrieve block creation parameters from config.
+The <cite>method</cite> is either a callable or name of the method to get from the current instance.
+Either method or callable should return an instance of nn.Module and accept block parameters.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.make_block">
+<span class="sig-name descname"><span class="pre">make_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.make_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.make_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the block with <cite>method</cite> by retrieving its parameters from config by <cite>name</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.get_block_defaults">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">get_block_defaults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.get_block_defaults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.get_block_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make block parameters from class default config and kwargs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.block">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model building block.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.initial_block">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">initial_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.initial_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.initial_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform inputs. Usually used for initial preprocessing, e.g. reshaping, downsampling etc.
+For parameters see <a class="reference internal" href="batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvBlock" title="batchflow.models.torch.layers.ConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>torch.nn.Module or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.body">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.body"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.body" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base layers which produce a network embedding.
+For parameters see <a class="reference internal" href="batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvBlock" title="batchflow.models.torch.layers.ConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>torch.nn.Module or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.head">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">head</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.head"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.head" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce predictions. Usually used to make network output compatible with the <cite>targets</cite> tensor.
+For parameters see <a class="reference internal" href="batchflow.models.torch.layers.html#batchflow.models.torch.layers.ConvBlock" title="batchflow.models.torch.layers.ConvBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>torch.nn.Module or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.initialize_weights">
+<span class="sig-name descname"><span class="pre">initialize_weights</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.initialize_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.initialize_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize model weights with a pre-defined or supplied callable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.transfer_to_device">
+<span class="sig-name descname"><span class="pre">transfer_to_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.transfer_to_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.transfer_to_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer (possibly nested) data structure to device and return the same structure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.transfer_from_device">
+<span class="sig-name descname"><span class="pre">transfer_from_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.transfer_from_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.transfer_from_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transfer (possibly nested) data structure from device and return the same structure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.model_to_device">
+<span class="sig-name descname"><span class="pre">model_to_device</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.model_to_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.model_to_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Put model on device(s). If needed, apply DataParallel wrapper.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">microbatch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">microbatch_drop_last</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sam_rho</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sam_individual_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the model with the data provided</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>np.ndarray</em><em> or </em><em>sequence of them</em>) – Model inputs. If there is a single input, then it is passed to model directly; otherwise, we pass a list.
+If the microbatching is used, individual elements are split along the first axis.</p></li>
+<li><p><strong>targets</strong> (<em>np.ndarray</em><em> or </em><em>sequence of them</em>) – Model targets to calculate loss with.
+If there is a single target, then it is passed to loss computation directly; otherwise, we pass a list.
+If the microbatching is used, individual elements are split along the first axis.</p></li>
+<li><p><strong>outputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><em>sequence of them</em>) – Desired outputs of the method.
+Each string defines a tensor to get and should be one of pre-defined or set in <cite>outputs</cite> key in the config.
+Pre-defined tensors are <cite>predictions</cite>, <cite>loss</cite>, and <cite>predictions_{i}</cite> for multi-output models.</p></li>
+<li><p><strong>lock</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If True, then model, loss and gradient update operations are locked, thus allowing for multithreading.</p></li>
+<li><p><strong>sync_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – If int, then how often to apply accumulated gradients to the weights.
+If True, then value from config is used.
+Default value is 1, which means to apply gradients after each batch of data.
+If False or None, then gradients are applied after each batch of data.</p></li>
+<li><p><strong>microbatch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – If int, then size of chunks to split every batch into. Allows to process given data sequentially,
+accumulating gradients from microbatches and applying them once in the end.
+If None, then value from config is used (default value is not to use microbatching).
+If False, then microbatching is not used.</p></li>
+<li><p><strong>microbatch_drop_last</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether to drop microbatches, that are smaller than the microbatch size. Default is True.</p></li>
+<li><p><strong>sam_rho</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – <p>Foret P. et al. “<a class="reference external" href="https://arxiv.org/abs/2010.01412">Sharpness-Aware Minimization for Efficiently Improving Generalization</a>”.
+If evaluates to False, then SAM is not used.
+If float, then controls the size of neighborhood (check the paper for details).</p>
+</p></li>
+<li><p><strong>sam_individual_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If True, then each gradient is scaled according to its own L2 norm.
+If False, then one common gradient norm is computed and used as a scaler for all gradients.</p></li>
+<li><p><strong>profile</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether to collect stats of model training timings.
+If True, then stats can be accessed via <cite>profile_info</cite> attribute or <a class="reference internal" href="#batchflow.models.torch.base.TorchModel.show_profile_info" title="batchflow.models.torch.base.TorchModel.show_profile_info"><code class="xref py py-meth docutils literal notranslate"><span class="pre">show_profile_info()</span></code></a> method.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Calculated values of requested tensors from <cite>outputs</cite> in the same order.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">B</span><span class="p">(</span><span class="s1">&#39;images&#39;</span><span class="p">),</span> <span class="n">B</span><span class="p">(</span><span class="s1">&#39;labels&#39;</span><span class="p">),</span> <span class="n">fetches</span><span class="o">=</span><span class="s1">&#39;loss&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">microbatch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get predictions on the data provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>np.ndarray</em><em> or </em><em>sequence of them</em>) – Model inputs. Passed directly to model.</p></li>
+<li><p><strong>targets</strong> (<em>np.ndarray</em><em> or </em><em>sequence of them</em>) – Optional model targets to calculate loss with. Passed directly to model.</p></li>
+<li><p><strong>outputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><em>sequence of them</em>) – <p>Desired outputs of the method.
+Each string defines a tensor to get and should be one of:</p>
+<blockquote>
+<div><ul>
+<li><p>pre-defined tensors, which are <cite>predictions</cite>, <cite>loss</cite>, and <cite>predictions_{i}</cite> for multi-output models.</p></li>
+<li><p>values described in the <cite>outputs</cite> key in the config</p></li>
+<li><p>layer id, which describes how to access the layer through a series of <cite>getattr</cite> and <cite>getitem</cite> calls.</p></li>
+</ul>
+<p>Allows to get intermediate activations of a neural network.</p>
+</div></blockquote>
+</p></li>
+<li><p><strong>lock</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – If True, then model and loss computation operations are locked, thus allowing for multithreading.</p></li>
+<li><p><strong>microbatch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a>) – If int, then size of chunks to split every batch into. Allows to process given data sequentially.
+If None, then value from config is used (default value is not to use microbatching).
+If False, then microbatching is not used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Calculated values of tensors in <cite>outputs</cite> in the same order.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Layer ids allow to get intermediate activations. If the model has <cite>batchflow_model.model.head[0]</cite> layer,
+you can access it with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">batchflow_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">B</span><span class="o">.</span><span class="n">images</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="s1">&#39;model.head[0]&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>String keys for <cite>getitem</cite> calls are also allowed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">batchflow_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">B</span><span class="o">.</span><span class="n">images</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="s1">&#39;model.body.encoder[&quot;block-0&quot;]&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.split_into_microbatches">
+<span class="sig-name descname"><span class="pre">split_into_microbatches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">microbatch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_last</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.split_into_microbatches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.split_into_microbatches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split inputs and targets into microbatch-sized chunks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.aggregate_microbatches">
+<span class="sig-name descname"><span class="pre">aggregate_microbatches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunked_outputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.aggregate_microbatches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.aggregate_microbatches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Aggregate outputs from microbatches into outputs for the whole batch.
+Scalar values are aggregated by <cite>mean</cite>, array values are concatenated along the first (batch) axis.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.compute_outputs">
+<span class="sig-name descname"><span class="pre">compute_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.compute_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.compute_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce additional outputs, defined in the config, from <cite>predictions</cite>.
+Also adds a number of aliases to predicted tensors.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.apply_output_operation">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">apply_output_operation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.apply_output_operation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.apply_output_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply <cite>operation</cite>, possibly aliased with a string, to <cite>tensor</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.prepare_outputs">
+<span class="sig-name descname"><span class="pre">prepare_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.prepare_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.prepare_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the hooks to all outputs that look like a layer id.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.extract_outputs">
+<span class="sig-name descname"><span class="pre">extract_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_container</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.extract_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.extract_outputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve activation data from hooks, get other requested outputs from container.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save torch model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Path to a file where the model data will be stored.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch_model</span> <span class="o">=</span> <span class="n">ResNet34</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now save the model</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;/path/to/models/resnet34&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The model will be saved to /path/to/models/resnet34.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a torch model from files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – File path where a model is stored.</p></li>
+<li><p><strong>eval</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether to switch the model to eval mode.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">resnet</span> <span class="o">=</span> <span class="n">ResNet34</span><span class="p">(</span><span class="n">load</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;/path/to/models/resnet34&#39;</span><span class="p">))</span>
+
+<span class="n">torch_model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;/path/to/models/resnet34&#39;</span><span class="p">)</span>
+
+<span class="n">TorchModel</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;device&#39;</span><span class="p">:</span> <span class="s1">&#39;gpu:2&#39;</span><span class="p">,</span> <span class="s1">&#39;load/path&#39;</span><span class="p">:</span> <span class="s1">&#39;/path/to/models/resnet34&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+<p><strong>How to move the model to device</strong></p>
+<p>The model will be moved to device specified in the model config by key <cite>device</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.set_debug_mode">
+<span class="sig-name descname"><span class="pre">set_debug_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.set_debug_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.set_debug_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes representation of model to a more or less detailed.
+By default, model representation reduces the description of the most complex modules.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="batchflow.models.torch.base.TorchModel.show_profile_info">
+<span class="sig-name descname"><span class="pre">show_profile_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">per_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sortby</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/batchflow/models/torch/base.html#TorchModel.show_profile_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#batchflow.models.torch.base.TorchModel.show_profile_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show stored profiling information with varying levels of details.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="batchflow.models.torch.vgg.html" class="btn btn-neutral float-right" title="VGG" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="batchflow.models.torch.models.html" class="btn btn-neutral float-left" title="Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2017-2021, Analysis Center.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
