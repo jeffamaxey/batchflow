@@ -1,4 +1,5 @@
 """ Run multiple notebooks. """
+
 # pylint: disable=import-error
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -14,10 +15,10 @@ from tensorflow.test import is_gpu_available
 NO_GPU = pytest.mark.skipif(not is_gpu_available(), reason='No GPU')
 
 NOTEBOOKS_DIR = './notebooks/'
-NOTEBOOKS = glob(NOTEBOOKS_DIR + '*.ipynb')
+NOTEBOOKS = glob(f'{NOTEBOOKS_DIR}*.ipynb')
 
 TUTORIALS_DIR = './../../examples/tutorials/'
-TUTORIALS = glob(TUTORIALS_DIR + '*.ipynb')
+TUTORIALS = glob(f'{TUTORIALS_DIR}*.ipynb')
 ALLOWED_TUTORIALS = [
     '01',
     '02',   # quite long
@@ -81,7 +82,7 @@ def test_run_notebooks(path, microbatch, device):
     code_ = []
     for line in code.split('\n'):
         if not line.startswith('#'):
-            flag = sum([name in line for name in BAD_PREFIXES])
+            flag = sum(name in line for name in BAD_PREFIXES)
             if flag == 0:
                 code_.append(line)
 

@@ -118,33 +118,32 @@ class Dropout(nn.Module):
         self.layer = self.LAYERS[get_num_dims(inputs)](p=dropout_rate)
 
     def forward(self, x):
-        if self.multisample is not False:
-            if isinstance(self.multisample, int): # dropout to the whole batch, then average
-                dropped = [self.layer(x) for _ in range(self.multisample)]
-                output = torch.mean(torch.stack(dropped), dim=0)
-            elif isinstance(self.multisample, (tuple, list)): # split batch into separate-dropout branches
-                if all(isinstance(item, int) for item in self.multisample):
-                    sizes = self.multisample
-                elif all(isinstance(item, float) for item in self.multisample):
-                    if sum(self.multisample) != 1.:
-                        raise ValueError('Sequence of floats must sum up to one for multisample dropout,\
+        if self.multisample is False:
+            output = self.layer(x)
+        elif isinstance(self.multisample, int): # dropout to the whole batch, then average
+            dropped = [self.layer(x) for _ in range(self.multisample)]
+            output = torch.mean(torch.stack(dropped), dim=0)
+        elif isinstance(self.multisample, (tuple, list)): # split batch into separate-dropout branches
+            if all(isinstance(item, int) for item in self.multisample):
+                sizes = self.multisample
+            elif all(isinstance(item, float) for item in self.multisample):
+                if sum(self.multisample) != 1.:
+                    raise ValueError('Sequence of floats must sum up to one for multisample dropout,\
                                           got instead {}'.format(self.multisample))
 
-                    batch_size = x.shape[0]
-                    sizes = [round(batch_size*item) for item in self.multisample[:-1]]
-                    residual = batch_size - sum(sizes)
-                    sizes += [residual]
-                else:
-                    raise ValueError('Elements of multisample must be either all ints or floats,\
+                batch_size = x.shape[0]
+                sizes = [round(batch_size*item) for item in self.multisample[:-1]]
+                residual = batch_size - sum(sizes)
+                sizes += [residual]
+            else:
+                raise ValueError('Elements of multisample must be either all ints or floats,\
                                       got instead {}'.format(self.multisample))
 
-                splitted = torch.split(x, sizes)
-                dropped = [self.layer(branch) for branch in splitted]
-                output = torch.cat(dropped, dim=0)
-            else:
-                raise ValueError('Unknown type of multisample: {}'.format(self.multisample))
+            splitted = torch.split(x, sizes)
+            dropped = [self.layer(branch) for branch in splitted]
+            output = torch.cat(dropped, dim=0)
         else:
-            output = self.layer(x)
+            raise ValueError(f'Unknown type of multisample: {self.multisample}')
         return output
 
 

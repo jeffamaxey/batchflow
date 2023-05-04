@@ -210,13 +210,19 @@ class Notifier:
             bar_func = tqdm_notebook
 
         # Set default values for bars
-        if bar_func is tqdm or bar_func is tqdm_notebook:
-            if bar_func is tqdm:
-                ncols = min(80 + 10 * self.n_monitors, 120)
-                colour = self.COLOUR_SUCCESS
-            elif bar_func is tqdm_notebook:
-                ncols = min(700 + 150 * self.n_monitors, 1000)
-                colour = None
+        if bar_func is tqdm:
+            ncols = min(80 + 10 * self.n_monitors, 120)
+            colour = self.COLOUR_SUCCESS
+            kwargs = {
+                'ncols': ncols,
+                'colour': colour,
+                'file': sys.stdout,
+                **kwargs
+            }
+
+        elif bar_func is tqdm_notebook:
+            ncols = min(700 + 150 * self.n_monitors, 1000)
+            colour = None
 
             kwargs = {
                 'ncols': ncols,
@@ -517,9 +523,7 @@ class Notifier:
             name = container['name']
 
             # Extract value from container for the `iteration`
-            if isinstance(source, (str, NamedExpression)):
-                value = container['data'][iteration]
-            elif isinstance(source, list):
+            if isinstance(source, (str, NamedExpression, list)):
                 value = container['data'][iteration]
             else:
                 continue
@@ -545,7 +549,7 @@ class Notifier:
 
     def __getattr__(self, key):
         """ Redirect everything to the underlying bar. """
-        if not key in self.__dict__ and hasattr(self.bar, key):
+        if key not in self.__dict__ and hasattr(self.bar, key):
             return getattr(self.bar, key)
         raise AttributeError(key)
 

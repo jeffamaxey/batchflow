@@ -12,7 +12,9 @@ class Config:
             if isinstance(other, dict):
                 self.update(other)
             else:
-                raise TypeError("unsupported operand type(s) for +=: 'IAddDict' and '{}'".format(type(other)))
+                raise TypeError(
+                    f"unsupported operand type(s) for +=: 'IAddDict' and '{type(other)}'"
+                )
             return self
 
     def __init__(self, config=None, **kwargs):
@@ -36,7 +38,9 @@ class Config:
         elif isinstance(config, Config):
             self.config = config.config
         else:
-            raise TypeError('config must be dict, Config or list but {} was given'.format(type(config)))
+            raise TypeError(
+                f'config must be dict, Config or list but {type(config)} was given'
+            )
 
         for key, value in kwargs.items():
             self.put(key, value)
@@ -55,11 +59,11 @@ class Config:
         -------
         single value or a tuple
         """
-        if isinstance(config, Config):
-            value = config.pop(variables, None, **kwargs)
-        else:
-            value = self._get(variables, config, pop=True, **kwargs)
-        return value
+        return (
+            config.pop(variables, None, **kwargs)
+            if isinstance(config, Config)
+            else self._get(variables, config, pop=True, **kwargs)
+        )
 
     def get(self, variables, default=None, config=None):
         """ Returns variables from config
@@ -77,11 +81,11 @@ class Config:
         -------
         single value or a tuple
         """
-        if isinstance(config, Config):
-            val = config.get(variables, default=default)
-        else:
-            val = self._get(variables, config, default=default, pop=False)
-        return val
+        return (
+            config.get(variables, default=default)
+            if isinstance(config, Config)
+            else self._get(variables, config, default=default, pop=False)
+        )
 
     def _get(self, variables, config=None, **kwargs):
         if config is None:
@@ -92,7 +96,7 @@ class Config:
 
         unpack = False
         if not isinstance(variables, (list, tuple)):
-            variables = list([variables])
+            variables = [variables]
             unpack = True
 
         ret_vars = []
@@ -114,28 +118,17 @@ class Config:
                     break
             if isinstance(_config, dict):
                 if pop:
-                    if has_default:
-                        val = _config.pop(var_name, default)
-                    else:
-                        val = _config.pop(var_name)
+                    val = _config.pop(var_name, default) if has_default else _config.pop(var_name)
                 else:
-                    if has_default:
-                        val = _config.get(var_name, default)
-                    else:
-                        val = _config[var_name]
+                    val = _config.get(var_name, default) if has_default else _config[var_name]
+            elif has_default:
+                val = default
             else:
-                if has_default:
-                    val = default
-                else:
-                    raise KeyError("Key '%s' not found" % variable)
+                raise KeyError(f"Key '{variable}' not found")
 
             ret_vars.append(val)
 
-        if unpack:
-            ret_vars = ret_vars[0]
-        else:
-            ret_vars = tuple(ret_vars)
-        return ret_vars
+        return ret_vars[0] if unpack else tuple(ret_vars)
 
     def put(self, variable, value, config=None):
         """ Put a new variable into config
@@ -177,10 +170,7 @@ class Config:
             config[var_name].update(value)
             config[var_name] = config[var_name].config
         else:
-            if isinstance(value, Config):
-                config[var_name] = value.config
-            else:
-                config[var_name] = value
+            config[var_name] = value.config if isinstance(value, Config) else value
 
     def parse(self, config):
         """ Parses flatten config with slashes
@@ -203,13 +193,17 @@ class Config:
                 raise ValueError('tuples in list should represent pairs key-value'
                                  ', and therefore must be always the length of 2')
         else:
-            raise TypeError('config must be dict, Config or list but {} was given'.format(type(config)))
+            raise TypeError(
+                f'config must be dict, Config or list but {type(config)} was given'
+            )
         new_config = Config.IAddDict()
         for key, value in items:
             if isinstance(value, dict):
                 value = self.parse(value)
             if not isinstance(key, str):
-                raise TypeError('only str keys are supported, "{}" is of {} type'.format(str(key), type(key)))
+                raise TypeError(
+                    f'only str keys are supported, "{str(key)}" is of {type(key)} type'
+                )
             key = '/'.join(filter(None, key.split('/'))) #merge multiple consecutive slashes '/' to one
             self.put(key, value, new_config)
         return new_config
@@ -237,7 +231,7 @@ class Config:
             if isinstance(value, dict) and len(value) > 0:
                 value = self.flatten(value)
                 for _key, _value in value.items():
-                    new_config[key+'/'+_key] = _value
+                    new_config[f'{key}/{_key}'] = _value
             else:
                 new_config[key] = value
         return new_config
@@ -255,8 +249,7 @@ class Config:
         return other.__add__(self)
 
     def __getitem__(self, key):
-        value = self._get(key)
-        return value
+        return self._get(key)
 
     def __setitem__(self, key, value):
         self.pop(key, default=None)
@@ -308,11 +301,7 @@ class Config:
         -------
             dict_items
         """
-        if flatten:
-            items = self.flatten().items()
-        else:
-            items = self.config.items()
-        return items
+        return self.flatten().items() if flatten else self.config.items()
 
     def keys(self, flatten=False):
         """ Returns config keys
@@ -326,11 +315,7 @@ class Config:
         -------
             dict_keys
         """
-        if flatten:
-            keys = self.flatten().keys()
-        else:
-            keys = self.config.keys()
-        return keys
+        return self.flatten().keys() if flatten else self.config.keys()
 
     def values(self, flatten=False):
         """ Return config values
@@ -344,11 +329,7 @@ class Config:
         -------
             dict_values
         """
-        if flatten:
-            values = self.flatten().values()
-        else:
-            values = self.config.values()
-        return values
+        return self.flatten().values() if flatten else self.config.values()
 
     def update(self, other=None, **kwargs):
         """ Update config with values from other
@@ -360,7 +341,7 @@ class Config:
         kwargs :
             parameters from kwargs also will be included into the resulting config
         """
-        other = dict() if other is None else other
+        other = {} if other is None else other
         if isinstance(other, (dict, Config)):
             for key, value in other.items():
                 self.put(key, value)

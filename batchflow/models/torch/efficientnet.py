@@ -92,18 +92,16 @@ class EfficientNetB0(Encoder):
         d_factor = config.get('common/depth_factor')
 
         for path in ('initial_block/', 'body/encoder/blocks/', 'head/'):
-            scalable = config.get(path + 'scalable')
-            if scalable:
+            if scalable := config.get(f'{path}scalable'):
                 for param, factor in [('filters', w_factor), ('n_reps', d_factor)]:
                     if factor != 1:
-                        val = config.get(path + param)
-                        if val:
+                        if val := config.get(path + param):
                             if isinstance(val, int):
                                 val = max(1, ceil(val * factor))
                             elif isinstance(val, list):
                                 val = [max(1, ceil(v * factor)) for v in val]
                             else:
-                                raise ValueError("{} should be int or list, {} given".format(param, type(val)))
+                                raise ValueError(f"{param} should be int or list, {type(val)} given")
                             config[path + param] = val
 
         return config

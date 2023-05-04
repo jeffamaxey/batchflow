@@ -63,10 +63,11 @@ class Imagenette(ImagesOpenset):
             """
             if (member.name.find('csv') != -1) or (member.name.find('.DS_Store') != -1):
                 return False
-            if not self.drop_grayscale:
-                return member.isfile()
-
-            return member.isfile() and _extract(archive, member).mode == 'RGB'
+            return (
+                member.isfile() and _extract(archive, member).mode == 'RGB'
+                if self.drop_grayscale
+                else member.isfile()
+            )
 
         def _gather_extracted(archive, files):
             images = self.create_array([_extract(archive, file) for file in files])

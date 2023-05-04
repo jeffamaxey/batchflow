@@ -18,14 +18,9 @@ def i(item, dtype='int', indices_type='list'):
         item = list(range(item.start, item.stop, item.step))
 
     if dtype == 'str':
-        if is_iterable(item):
-            item = [str(ix) for ix in item]
-        else:
-            item = str(item)
-
-    if is_iterable(item):
-        if indices_type == 'array':
-            item = np.array(item)
+        item = [str(ix) for ix in item] if is_iterable(item) else str(item)
+    if is_iterable(item) and indices_type == 'array':
+        item = np.array(item)
 
     return item
 

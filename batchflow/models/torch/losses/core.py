@@ -82,27 +82,29 @@ class Weighted(nn.Module):
         self.losses = losses
         self.n = len(losses)
 
-        if weights is not None:
-            if len(weights) != self.n:
-                raise ValueError('A weight must be provided for each of the losses!')
-            self.weights = weights
-        else:
+        if weights is None:
             self.weights = (1 / self.n,) * self.n
 
-        if starts is not None:
-            if len(starts) != self.n:
-                raise ValueError('Starting iteration must be provided for each of the losses!')
-            self.starts = starts
+        elif len(weights) != self.n:
+            raise ValueError('A weight must be provided for each of the losses!')
         else:
+            self.weights = weights
+        if starts is None:
             self.starts = (0,) * self.n
 
+        elif len(starts) != self.n:
+            raise ValueError('Starting iteration must be provided for each of the losses!')
+        else:
+            self.starts = starts
         self.iter = 0
 
     def forward(self, prediction, target):
-        loss = 0
-        for loss_func, weight, start_iter in zip(self.losses, self.weights, self.starts):
-            if self.iter >= start_iter:
-                loss += weight * loss_func(prediction, target)
-
+        loss = sum(
+            weight * loss_func(prediction, target)
+            for loss_func, weight, start_iter in zip(
+                self.losses, self.weights, self.starts
+            )
+            if self.iter >= start_iter
+        )
         self.iter += 1
         return loss

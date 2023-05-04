@@ -176,9 +176,7 @@ class ImagesBatch(BaseImagesBatch):
 
     @classmethod
     def _get_image_shape(cls, image):
-        if isinstance(image, PIL.Image.Image):
-            return image.size
-        return image.shape[:2]
+        return image.size if isinstance(image, PIL.Image.Image) else image.shape[:2]
 
     @property
     def image_shape(self):
@@ -225,7 +223,7 @@ class ImagesBatch(BaseImagesBatch):
         if dst is None:
             raise RuntimeError('You must specify `dst`')
         image = self.get(ix, src)
-        ix = str(ix) + '.' + fmt if fmt is not None else str(ix)
+        ix = f'{str(ix)}.{fmt}' if fmt is not None else str(ix)
         image.save(os.path.join(dst, ix))
 
     def _assemble_component(self, result, *args, component='images', **kwargs):
@@ -331,15 +329,17 @@ class ImagesBatch(BaseImagesBatch):
                 origin = (np.random.randint(background_shape[0]-image_shape[0]+1),
                           np.random.randint(background_shape[1]-image_shape[1]+1))
             else:
-                raise ValueError("If string, origin should be one of ['center', 'top_left', 'top_right', "
-                                 "'bottom_left', 'bottom_right', 'random']. Got '{}'.".format(origin))
+                raise ValueError(
+                    f"If string, origin should be one of ['center', 'top_left', 'top_right', 'bottom_left', 'bottom_right', 'random']. Got '{origin}'."
+                )
         elif all(0 <= elem < 1 for elem in origin):
             region = ((background_shape[0]-image_shape[0]+1),
                       (background_shape[1]-image_shape[1]+1))
             origin = np.asarray(origin) * region
         elif not all(isinstance(elem, int) for elem in origin):
-            raise ValueError('If not a string, origin should be either a sequence of ints or sequence of '
-                             'floats in [0, 1) interval. Got {}'.format(origin))
+            raise ValueError(
+                f'If not a string, origin should be either a sequence of ints or sequence of floats in [0, 1) interval. Got {origin}'
+            )
 
         return np.asarray(origin, dtype=np.int)
 
@@ -469,11 +469,11 @@ class ImagesBatch(BaseImagesBatch):
         element, as origin will be sampled independently for each `src` element.
         To randomly sample same origin for a number of components, use `R` named expression for `origin` argument.
         """
-        if not isinstance(background, PIL.Image.Image):
-            background = PIL.Image.fromarray(background)
-        else:
-            background = background.copy()
-
+        background = (
+            background.copy()
+            if isinstance(background, PIL.Image.Image)
+            else PIL.Image.fromarray(background)
+        )
         if not isinstance(mask, PIL.Image.Image):
             mask = PIL.Image.fromarray(mask) if mask is not None else None
 
@@ -683,9 +683,7 @@ class ImagesBatch(BaseImagesBatch):
         p : float
             Probability of applying the transform. Default is 1.
         """
-        if mode == 'lr':
-            return PIL.ImageOps.mirror(image)
-        return PIL.ImageOps.flip(image)
+        return PIL.ImageOps.mirror(image) if mode == 'lr' else PIL.ImageOps.flip(image)
 
     @apply_parallel
     def invert(self, image, channels='all'):

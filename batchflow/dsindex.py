@@ -91,11 +91,7 @@ class DatasetIndex(Baseset):
         numpy.array
             Index to be stored in class instance.
         """
-        if callable(index):
-            _index = index()
-        else:
-            _index = index
-
+        _index = index() if callable(index) else index
         if isinstance(_index, DatasetIndex):
             _index = _index.indices
         elif isinstance(_index, int):
@@ -121,7 +117,7 @@ class DatasetIndex(Baseset):
     def build_pos(self):
         """ Create a dictionary with positions in the index. """
         if self.indices is None:
-            return dict()
+            return {}
         return dict(zip(self.indices, np.arange(len(self))))
 
     def get_pos(self, index):
@@ -153,14 +149,11 @@ class DatasetIndex(Baseset):
         if isinstance(index, slice):
             start = self._pos[index.start] if index.start is not None else None
             stop = self._pos[index.stop] if index.stop is not None else None
-            pos = slice(start, stop, index.step)
-        elif isinstance(index, str):
-            pos = self._pos[index]
-        elif isinstance(index, Iterable):
-            pos = np.asarray([self._pos[ix] for ix in index])
+            return slice(start, stop, index.step)
+        elif isinstance(index, str) or not isinstance(index, Iterable):
+            return self._pos[index]
         else:
-            pos = self._pos[index]
-        return pos
+            return np.asarray([self._pos[ix] for ix in index])
 
     def subset_by_pos(self, pos):
         """ Return subset of index by given positions in the index.
@@ -341,10 +334,9 @@ class DatasetIndex(Baseset):
         if iter_params['_start_index'] + batch_size >= num_items:
             rest_items = np.copy(iter_params['_order'][iter_params['_start_index']:])
             rest_of_batch = iter_params['_start_index'] + batch_size - num_items
-            if rest_of_batch > 0:
-                if drop_last:
-                    rest_items = None
-                    rest_of_batch = batch_size
+            if rest_of_batch > 0 and drop_last:
+                rest_items = None
+                rest_of_batch = batch_size
             iter_params['_start_index'] = 0
             iter_params['_n_epochs'] += 1
             iter_params['_order'] = self.shuffle(shuffle, iter_params)
@@ -358,7 +350,7 @@ class DatasetIndex(Baseset):
             batch_items = np.concatenate((rest_items, new_items))
 
         if n_iters is not None and iter_params['_n_iters'] >= n_iters or \
-           n_epochs is not None and iter_params['_n_epochs'] >= n_epochs:
+               n_epochs is not None and iter_params['_n_epochs'] >= n_epochs:
             if 'notifier' in iter_params:
                 iter_params['notifier'].close()
             if n_iters is not None or drop_last and (rest_items is None or len(rest_items) < batch_size):
@@ -501,14 +493,8 @@ class DatasetIndex(Baseset):
         >>> DatasetIndex(100).create_batch(index=2*numpy.arange(50))
         """
         _ = args, kwargs
-        if isinstance(index, DatasetIndex):
-            _index = index.indices
-        else:
-            _index = index
-        if pos:
-            batch = self.subset_by_pos(_index)
-        else:
-            batch = _index
+        _index = index.indices if isinstance(index, DatasetIndex) else index
+        batch = self.subset_by_pos(_index) if pos else _index
         if not as_array:
             batch = self.create_subset(batch)
         return batch
@@ -571,7 +557,7 @@ class FilesIndex(DatasetIndex):
         """
         paths = {}
         for index in index_list:
-            paths.update(index.paths)
+            paths |= index.paths
         return type(index_list[0])(index=np.concatenate([i.index for i in index_list]), paths=paths)
 
     def build_index(self, index=None, path=None, *args, **kwargs):
@@ -593,28 +579,24 @@ class FilesIndex(DatasetIndex):
             index = DatasetIndex(index).indices
 
         if isinstance(paths, dict):
-            self._paths = dict((file, paths[file]) for file in index)
+            self._paths = {file: paths[file] for file in index}
         else:
-            self._paths = dict((file, paths[pos]) for pos, file in np.ndenumerate(index))
+            self._paths = {file: paths[pos] for pos, file in np.ndenumerate(index)}
         self.dirs = dirs
         return index
 
     def build_from_path(self, path, dirs=False, no_ext=False, sort=False):
         """ Build index from a path/glob or a sequence of paths/globs. """
-        if isinstance(path, str):
-            paths = [path]
-        else:
-            paths = path
-
+        paths = [path] if isinstance(path, str) else path
         if len(paths) == 0:
-            raise ValueError("`path` cannot be empty. Got '{}'.".format(path))
+            raise ValueError(f"`path` cannot be empty. Got '{path}'.")
 
         _all_index = []
-        _all_paths = dict()
+        _all_paths = {}
         for one_path in paths:
             _index, _paths = self.build_from_one_path(one_path, dirs, no_ext)
             _all_index.append(_index)
-            _all_paths.update(_paths)
+            _all_paths |= _paths
 
         _all_index = np.ravel(_all_index)
 
@@ -628,7 +610,7 @@ class FilesIndex(DatasetIndex):
     def build_from_one_path(self, path, dirs=False, no_ext=False):
         """ Build index from a path/glob. """
         if not isinstance(path, str):
-            raise TypeError('Each path must be a string, instead got {}'.format(path))
+            raise TypeError(f'Each path must be a string, instead got {path}')
 
         check_fn = os.path.isdir if dirs else os.path.isfile
         pathlist = glob.iglob(path, recursive=True)
@@ -637,7 +619,7 @@ class FilesIndex(DatasetIndex):
             _index = _full_index[:, 0]
             _paths = _full_index[:, 1]
         else:
-            warnings.warn("No items to index in %s" % path)
+            warnings.warn(f"No items to index in {path}")
             _index, _paths = np.empty(0), np.empty(0)
         _paths = dict(zip(_index, _paths))
         return _index, _paths

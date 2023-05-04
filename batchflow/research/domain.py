@@ -28,19 +28,14 @@ class Alias:
             self.alias = value.alias
         else:
             self.value = value
-            if alias is None:
-                self.alias = self._get_name(value)
-            else:
-                self.alias = alias
+            self.alias = self._get_name(value) if alias is None else alias
 
     def __repr__(self):
-        return 'Alias(' + str(self.alias) + ': ' + str(self.value) + ')'
+        return f'Alias({str(self.alias)}: {str(self.value)})'
 
     def _get_name(self, value):
         """ Create name for the value. """
-        if hasattr(value, '__name__'):
-            return value.__name__
-        return str(value)
+        return value.__name__ if hasattr(value, '__name__') else str(value)
 
 class ConfigAlias:
     """ Wrapper for Config to infer its aliased version. Each key and value from initial config will be
@@ -88,7 +83,9 @@ class ConfigAlias:
         config_alias = Config({item[0].alias: item[1].alias for item in self._config})
         if as_string:
             config_alias = OrderedDict(sorted(config_alias.items()))
-            config_alias = delim.join([str(key)+'_'+str(value) for key, value in config_alias.items()])
+            config_alias = delim.join(
+                [f'{str(key)}_{str(value)}' for key, value in config_alias.items()]
+            )
         return config_alias
 
     def config(self):
@@ -111,9 +108,7 @@ class ConfigAlias:
         key = to_list(key)
         res = [item for item in self._config if item[0].value in key]
         self._config = [item for item in self._config if item[0].value not in key]
-        if len(res) >= 1:
-            return ConfigAlias(res)
-        return None
+        return ConfigAlias(res) if res else None
 
     def pop_alias(self, key):
         """ Pop item from ConfigAlias by alias (not by value).
@@ -126,15 +121,11 @@ class ConfigAlias:
         key = to_list(key)
         res = [item for item in self._config if item[0].alias in key]
         self._config = [item for item in self._config if item[0].alias not in key]
-        if len(res) >= 1:
-            return ConfigAlias(res)
-        return None
+        return ConfigAlias(res) if res else None
 
     def set_prefix(self, keys, n_digits):
         """ Create prefix from keys. """
-        prefix = ''
-        for key in keys:
-            prefix += self.alias().get('#' + key, 'null') + '_'
+        prefix = ''.join(self.alias().get(f'#{key}', 'null') + '_' for key in keys)
         fmt = ("{:0" + str(n_digits) + "d}").format(self.config()['repetition'])
         self['_prefix'] = prefix + fmt + '_'
         return self
@@ -255,7 +246,7 @@ class Domain:
         self.create_id_prefix = False
         self.random_state = None
 
-        self.values_indices = dict()
+        self.values_indices = {}
 
     def _get_all_options_names(self):
         options = []
@@ -273,10 +264,10 @@ class Domain:
             parameter = Alias(parameter)
             if isinstance(values, (list, tuple, np.ndarray)):
                 values = [Alias(value) for value in values]
-            elif isinstance(values, Sampler):
-                pass
-            else:
-                raise TypeError('`values` must be array-like object or Sampler but {} were given'.format(type(values)))
+            elif not isinstance(values, Sampler):
+                raise TypeError(
+                    f'`values` must be array-like object or Sampler but {type(values)} were given'
+                )
             aliases_options += [(parameter, values)]
         return aliases_options
 
@@ -324,9 +315,10 @@ class Domain:
         """ Set domain update parameters. """
         if isinstance(when, (int, str)):
             when = [when]
-        iter_kwargs = dict()
-        for attr in ['n_items', 'n_reps', 'repeat_each']:
-            iter_kwargs[attr] = kwargs.pop(attr) if attr in kwargs else getattr(self, attr)
+        iter_kwargs = {
+            attr: kwargs.pop(attr) if attr in kwargs else getattr(self, attr)
+            for attr in ['n_items', 'n_reps', 'repeat_each']
+        }
         self.updates.append({
             'function': function,
             'when': when,
@@ -351,19 +343,21 @@ class Domain:
     @property
     def size(self):
         """ Return the number of configs that will be produces from domain. """
-        if self.n_items is not None:
-            return self.n_reps * self.n_items
-        return None
+        return self.n_reps * self.n_items if self.n_items is not None else None
 
     @property
     def len(self):
         """ Return the number of configs that will be produced from domain without repetitions. None if infinite. """
         size = 0
         for cube in self.cubes:
-            lengthes = [len(values) for _, values in cube if isinstance(values, (list, tuple, np.ndarray))]
-            if len(lengthes) == 0:
+            if lengthes := [
+                len(values)
+                for _, values in cube
+                if isinstance(values, (list, tuple, np.ndarray))
+            ]:
+                size += np.product(lengthes)
+            else:
                 return None
-            size += np.product(lengthes)
         return size
 
     def __len__(self):
@@ -402,24 +396,23 @@ class Domain:
         return result
 
     def __matmul__(self, other):
-        if self._is_array_option():
-            that = self._to_scalar_product()
-        else:
-            that = self
-
+        that = self._to_scalar_product() if self._is_array_option() else self
         if other._is_array_option():
             other = other._to_scalar_product()
 
-        if that._is_scalar_product() and other._is_scalar_product():
-            if len(that.cubes) == len(other.cubes):
-                cubes = [cube_1 + cube_2 for cube_1, cube_2 in zip(that.cubes, other.cubes)]
-                weights = np.nanprod(np.stack([that.weights, other.weights]), axis=0)
-                nan_mask = np.logical_and(np.isnan(that.weights), np.isnan(other.weights))
-                weights[nan_mask] = np.nan
-                domain = Domain()
-                domain.cubes = cubes
-                domain.weights = weights
-                return domain
+        if (
+            that._is_scalar_product()
+            and other._is_scalar_product()
+            and len(that.cubes) == len(other.cubes)
+        ):
+            cubes = [cube_1 + cube_2 for cube_1, cube_2 in zip(that.cubes, other.cubes)]
+            weights = np.nanprod(np.stack([that.weights, other.weights]), axis=0)
+            nan_mask = np.logical_and(np.isnan(that.weights), np.isnan(other.weights))
+            weights[nan_mask] = np.nan
+            domain = Domain()
+            domain.cubes = cubes
+            domain.weights = weights
+            return domain
         raise ValueError("The numbers of domain cubes must conincide.")
 
     def __rmul__(self, other):
@@ -466,7 +459,7 @@ class Domain:
                     weights = self.weights[block]
                     weights[np.isnan(weights)] = 1
                     iterators = [self._cube_iterator(cube) for cube in np.array(self.cubes, dtype=object)[block]]
-                    while len(iterators) > 0:
+                    while iterators:
                         index = self.random_state.choice(len(block), p=weights/weights.sum())
                         try:
                             yield next(iterators[index])
@@ -504,6 +497,7 @@ class Domain:
                                 res.set_prefix(keys, n_digits=int(self.create_id_prefix))
                             yield res
                     i += self.repeat_each
+
         self._iterator = _iterator_with_repetitions()
 
     def _get_sampling_blocks(self):
@@ -524,11 +518,11 @@ class Domain:
 
     def _is_array_option(self):
         """ Return True if domain consists of only one array-like option. """
-        if len(self.cubes) == 1:
-            if len(self.cubes[0]) == 1:
-                if isinstance(self.cubes[0][0][1], (list, tuple, np.ndarray)):
-                    return True
-        return False
+        return (
+            len(self.cubes) == 1
+            and len(self.cubes[0]) == 1
+            and isinstance(self.cubes[0][0][1], (list, tuple, np.ndarray))
+        )
 
     def _is_scalar_product(self):
         """ Return True if domain is a result of matmul. It means that each cube has
@@ -536,7 +530,7 @@ class Domain:
         """
         for cube in self.cubes:
             samplers = [name for name, values in cube if isinstance(values, Sampler)]
-            if len(samplers) > 0:
+            if samplers:
                 return False
             if any(len(values) != 1 for _, values in cube):
                 return False
@@ -563,18 +557,16 @@ class Domain:
         arrays = [item for item in cube if isinstance(item[1], (list, tuple, np.ndarray))]
         samplers = [item for item in cube if isinstance(item[1], Sampler)]
 
-        if len(arrays) > 0:
+        if arrays:
             for combination in list(product(*[self.option_items(name, values) for name, values in arrays])):
-                res = []
-                for name, values in samplers:
-                    res.append(self.option_sample(name, values))
+                res = [self.option_sample(name, values) for name, values in samplers]
                 res.extend(combination)
                 yield sum(res, ConfigAlias())
         else:
             iterators = [self.option_iterator(name, values) for name, values in cube]
             while True:
                 try:
-                    yield sum([next(iterator) for iterator in iterators], ConfigAlias())
+                    yield sum((next(iterator) for iterator in iterators), ConfigAlias())
                 except StopIteration:
                     break
 
@@ -586,17 +578,19 @@ class Domain:
         list of `ConfigAlias` objects.
         """
         if not isinstance(values, (list, tuple, np.ndarray)):
-            raise TypeError('`values` must be array-like object but {} were given'.format(type(values)))
+            raise TypeError(
+                f'`values` must be array-like object but {type(values)} were given'
+            )
         res = []
         for value in values:
             if self.create_id_prefix:
                 n_digits = self.create_id_prefix if self.create_id_prefix is not True else 1
-                option_values = self.values_indices.get(name.alias, dict())
+                option_values = self.values_indices.get(name.alias, {})
                 current_index = option_values.get(value.alias, len(option_values))
                 option_values[value.alias] = current_index
                 self.values_indices[name.alias] = option_values
                 fmt = ("{:0" + str(n_digits) + "d}").format(current_index)
-                res.append(ConfigAlias([[name, value], ["#" + name.alias, fmt]]))
+                res.append(ConfigAlias([[name, value], [f"#{name.alias}", fmt]]))
             else:
                 res.append(ConfigAlias([[name, value]]))
         return res
@@ -615,7 +609,7 @@ class Domain:
         """
 
         if not isinstance(values, Sampler):
-            raise TypeError('`values` must be Sampler but {} was given'.format(type(values)))
+            raise TypeError(f'`values` must be Sampler but {type(values)} was given')
         res = []
         for _ in range(size or 1):
             if self.create_id_prefix:
@@ -623,7 +617,11 @@ class Domain:
                 current_index = self.values_indices.get(name.alias, -1) + 1
                 self.values_indices[name.alias] = current_index
                 fmt = ("{:0" + str(n_digits) + "d}").format(current_index)
-                res.append(ConfigAlias([[name, values.sample(1)[0, 0]], ["#" + name.alias, fmt]]))
+                res.append(
+                    ConfigAlias(
+                        [[name, values.sample(1)[0, 0]], [f"#{name.alias}", fmt]]
+                    )
+                )
             else:
                 res.append(ConfigAlias([[name, values.sample(1)[0, 0]]]))
         if size is None:
@@ -645,21 +643,29 @@ class Domain:
                 yield ConfigAlias([[name, value]])
 
     def __repr__(self):
-        repr = ''
-        cubes_reprs = []
         spacing = 4 * ' '
 
-        for cube in self.cubes:
-            cubes_reprs += [' * '.join([self._option_repr(name, values) for name, values in cube])]
-        repr += ' + \n'.join(cubes_reprs)
+        cubes_reprs = [
+            ' * '.join([self._option_repr(name, values) for name, values in cube])
+            for cube in self.cubes
+        ]
+        repr = '' + ' + \n'.join(cubes_reprs)
         repr += 2 * '\n' + 'params:\n'
-        repr += '\n'.join([spacing + f"{attr}={getattr(self, attr)}" for attr in ['n_items', 'n_reps', 'repeat_each']])
+        repr += '\n'.join(
+            [
+                f"{spacing}{attr}={getattr(self, attr)}"
+                for attr in ['n_items', 'n_reps', 'repeat_each']
+            ]
+        )
 
         if len(self.updates) > 0:
             repr += 2 * '\n' + 'updates:\n'
-            update_reprs = []
-            for update in self.updates:
-                update_reprs += [str('\n'.join(spacing + f"{key}: {value}" for key, value in update.items()))]
+            update_reprs = [
+                '\n'.join(
+                    f"{spacing}{key}: {value}" for key, value in update.items()
+                )
+                for update in self.updates
+            ]
             repr += '\n\n'.join(update_reprs)
         return repr
 
@@ -667,7 +673,10 @@ class Domain:
         alias = name.alias
 
         if isinstance(values, (list, tuple, np.ndarray)):
-            values = [item.alias if not isinstance(item.value, str) else f"'{item.value}'" for item in values]
+            values = [
+                f"'{item.value}'" if isinstance(item.value, str) else item.alias
+                for item in values
+            ]
             values = f'[{", ".join(values)}]'
         return '{0}: {1}'.format(alias, values)
 

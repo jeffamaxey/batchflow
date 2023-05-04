@@ -65,8 +65,6 @@ class Crop(nn.Module):
                 shape[i + 2] = slice(None, i_shape_)
                 zeros[shape] = output
                 output = zeros
-            else:
-                pass
             i_shape = get_shape(output)
         return output
 
@@ -189,16 +187,15 @@ class Combine(nn.Module):
 
     def extra_repr(self):
         """ Report shapes before and after combination to a repr. """
-        if isinstance(self.name, str):
-            res = 'op={}'.format(self.name)
-        else:
-            res = 'op=callable {}'.format(self.name.__name__)
-        res += ',\nleading_idx={}'.format(self.idx)
-
-        res += ',\ninput_shapes=[{}]'.format(self.input_shapes)
+        res = (
+            f'op={self.name}'
+            if isinstance(self.name, str)
+            else f'op=callable {self.name.__name__}'
+        ) + f',\nleading_idx={self.idx}'
+        res += f',\ninput_shapes=[{self.input_shapes}]'
         if self.force_resize:
-            res += ',\nresized_shapes=[{}]'.format(self.resized_shapes)
-        res += ',\noutput_shape={}'.format(self.output_shape)
+            res += f',\nresized_shapes=[{self.resized_shapes}]'
+        res += f',\noutput_shape={self.output_shape}'
         return res
 
 
@@ -255,10 +252,10 @@ class Interpolate(nn.Module):
     def extra_repr(self):
         """ Report interpolation mode and factor for a repr. """
         if self.scale_factor is not None:
-            info = 'scale_factor=' + str(self.scale_factor)
+            info = f'scale_factor={str(self.scale_factor)}'
         else:
-            info = 'size=' + str(self.shape)
-        info += ', mode=' + self.mode
+            info = f'size={str(self.shape)}'
+        info += f', mode={self.mode}'
         return info
 
 

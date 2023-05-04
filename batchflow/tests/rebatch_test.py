@@ -1,4 +1,5 @@
 """ Test rebatch action """
+
 import numpy as np
 
 import pytest
@@ -12,7 +13,7 @@ class MyBatch(Batch):
 
 DATASET_SIZE = 60
 PARAMETERS = [(20, 30), (1, 10), (10, 60), (1, 60), (15, 40), (13, 17)]
-PARAMETERS = PARAMETERS + [(b, a) for a, b in PARAMETERS]
+PARAMETERS += [(b, a) for a, b in PARAMETERS]
 
 
 def check_batch_lengths(batch_lengths, batch_size):

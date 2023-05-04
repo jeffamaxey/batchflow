@@ -32,7 +32,4 @@ class BaseModel(ABC):
     @classmethod
     def is_model_like(cls, obj):
         """ Check if the `obj` provides the same interface, as required by this specification. """
-        for method in cls.__abstractmethods__:
-            if not hasattr(obj, method):
-                return False
-        return True
+        return all(hasattr(obj, method) for method in cls.__abstractmethods__)

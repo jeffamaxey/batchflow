@@ -117,15 +117,13 @@ class TelegramMessage:
             self.message_id = response_['message_id']
             self.message_type = message_type
 
-        # Subsequent messages: updating contents by editing the message
+        elif message_type == 'text':
+            response = self.post('editMessageText', text=content,
+                                 message_id=self.message_id, parse_mode='MarkdownV2')
         else:
-            if message_type == 'text':
-                response = self.post('editMessageText', text=content,
-                                     message_id=self.message_id, parse_mode='MarkdownV2')
-            else:
-                data = self.content_to_dict(content, group=False)
-                response = self.post('editMessageMedia', **data,
-                                     message_id=self.message_id)
+            data = self.content_to_dict(content, group=False)
+            response = self.post('editMessageMedia', **data,
+                                 message_id=self.message_id)
         self.message_content_hash = hash(content)
         return response
 

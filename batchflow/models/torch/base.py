@@ -426,9 +426,7 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
         # Store the config for later usage
         self.external_config = Config(config)
 
-        #
-        load = self.external_config.get('load')
-        if load:
+        if load := self.external_config.get('load'):
             self.load(**load)
         else:
             self.initialize()
@@ -465,43 +463,38 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
 
         Don't forget to use the default config from parent class.
         """
-        config = Config({
-            # Devices and memory control
-            'amp': True,
-            'device': None,
-            'benchmark': True,
-            'microbatch_size': False,
-            'sync_frequency': 1,
-            'profile': False,
-
-            # Model building
-            'order': ['initial_block', 'body', 'head'],
-            'initial_block': {},
-            'body': {},
-            'head': {},
-            'common': {},
-
-            # Additional operations to apply to model predictions
-            'output': None,
-
-            # Shapes
-            'placeholder_batch_size': 2,
-
-            # Training infrastructure
-            'loss': None,
-            'optimizer': 'Adam',
-            'decay': None,
-
-            # SAM: sharpness-aware minimization
-            'sam_rho': 0.0,
-            'sam_individual_norm': True,
-        })
-        return config
+        return Config(
+            {
+                # Devices and memory control
+                'amp': True,
+                'device': None,
+                'benchmark': True,
+                'microbatch_size': False,
+                'sync_frequency': 1,
+                'profile': False,
+                # Model building
+                'order': ['initial_block', 'body', 'head'],
+                'initial_block': {},
+                'body': {},
+                'head': {},
+                'common': {},
+                # Additional operations to apply to model predictions
+                'output': None,
+                # Shapes
+                'placeholder_batch_size': 2,
+                # Training infrastructure
+                'loss': None,
+                'optimizer': 'Adam',
+                'decay': None,
+                # SAM: sharpness-aware minimization
+                'sam_rho': 0.0,
+                'sam_individual_norm': True,
+            }
+        )
 
     def combine_configs(self):
         """ Combine default configuration and the external one. """
-        config = self.default_config() + self.external_config
-        return config
+        return self.default_config() + self.external_config
 
     def update_config(self):
         """ Update config with instance attributes. """
@@ -560,7 +553,9 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
                 self.device = torch.device('cpu')
         else:
             devices = devices if isinstance(devices, list) else [devices]
-            available_devices = ['cuda:{}'.format(i) for i in range(torch.cuda.device_count())] + ['cpu']
+            available_devices = [
+                f'cuda:{i}' for i in range(torch.cuda.device_count())
+            ] + ['cpu']
             for dev in devices:
                 if isinstance(dev, torch.device):
                     self.devices.append(dev)
@@ -573,7 +568,7 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
                                if re.search(dev_, device.lower()) is not None]
                     self.devices.extend(devices)
                 else:
-                    raise TypeError('Wrong device type: {}'.format(type(dev)))
+                    raise TypeError(f'Wrong device type: {type(dev)}')
             self.devices = [device for i, device in enumerate(self.devices)
                             if device not in self.devices[:i]]
             self.device = self.devices[0]
@@ -608,17 +603,20 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
 
     @staticmethod
     def _to_nested_list(sequence):
-        if not isinstance(sequence[0], (tuple, list)):
-            return [list(sequence)]
-        return [list(item) for item in sequence]
+        return (
+            [list(item) for item in sequence]
+            if isinstance(sequence[0], (tuple, list))
+            else [list(sequence)]
+        )
 
     def make_placeholder_data(self, batch_size=None):
         """ Create a sequence of tensor, based on the parsed `inputs_shapes`. """
         batch_size = batch_size or self.placeholder_batch_size
 
-        data = [np.zeros((batch_size, *shape[1:]), dtype=np.float32)
-                for shape in self.inputs_shapes]
-        return data
+        return [
+            np.zeros((batch_size, *shape[1:]), dtype=np.float32)
+            for shape in self.inputs_shapes
+        ]
 
 
     # Create training infrastructure: loss, optimizer, decay
@@ -661,7 +659,7 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
             # Callable: just pass other arguments in
             loss_fn = partial(loss, **kwargs)
         else:
-            raise ValueError("Loss is not defined in the model %s" % self.__class__.__name__)
+            raise ValueError(f"Loss is not defined in the model {self.__class__.__name__}")
 
         loss_fn = loss_fn or loss(**kwargs)
         if isinstance(loss_fn, nn.Module):
@@ -1036,8 +1034,10 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
             steps = len(chunked_inputs)
             inputs_shapes = [get_shape(item) for item in chunked_inputs[-1]]
             targets_shapes = [get_shape(item) for item in chunked_targets[-1]]
-            self.last_train_info.update({'inputs_shapes': inputs_shapes,
-                                         'targets_shapes': targets_shapes})
+            self.last_train_info |= {
+                'inputs_shapes': inputs_shapes,
+                'targets_shapes': targets_shapes,
+            }
 
             # Create PyTorch model if it is yet to be initialized, based on the actual inputs
             if self.model is None:
@@ -1086,16 +1086,17 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
             self.loss_list.append(np.mean(self._loss_list[-steps:]))
 
             # Store info about current train iteration
-            self.last_train_info.update({
+            self.last_train_info |= {
                 'amp': self.amp,
                 'batch_size': batch_size,
                 'microbatch_size': microbatch_size,
                 'sync_frequency': sync_frequency,
                 'steps': steps,
-                'sam': bool(sam_rho), 'sam_rho': sam_rho,
+                'sam': bool(sam_rho),
+                'sam_rho': sam_rho,
                 'sam_individual_norm': sam_individual_norm,
                 'outputs': outputs,
-            })
+            }
 
         finally:
             if lock:
@@ -1347,7 +1348,7 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
 
         # Make all possible outputs
         additional_outputs = self.compute_outputs(predictions=predictions)
-        output_container.update(additional_outputs)
+        output_container |= additional_outputs
 
         # Log inner info
         predictions_ = list(predictions) if isinstance(predictions, (tuple, list)) else [predictions]
@@ -1442,10 +1443,11 @@ class TorchModel(BaseModel, ExtractionMixin, OptimalBatchSizeMixin, Visualizatio
                     if operation_name:
                         outputs[output_prefix + operation_name] = output_tensor # i.e. `first_sigmoid`, `sigmoid`
 
-                    outputs.update({
-                        output_prefix + str(j) : output_tensor, # i.e. `first_0`, `0`
-                        f'output_{i}_{j}' : output_tensor, # i.e. `predictions_0_0`
-                    })
+                    outputs |= {
+                        output_prefix
+                        + str(j): output_tensor,  # i.e. `first_0`, `0`
+                        f'output_{i}_{j}': output_tensor,  # i.e. `predictions_0_0`
+                    }
 
         return outputs
 

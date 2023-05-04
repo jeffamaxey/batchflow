@@ -55,7 +55,7 @@ class DynamicQueue:
     def next_tasks(self, n_tasks=1):
         """ Get next `n_tasks` elements of queue. """
         configs = []
-        for i in range(n_tasks):
+        for _ in range(n_tasks):
             branches_tasks = [] # TODO: rename it
             try:
                 for _ in range(self.n_branches):
@@ -64,13 +64,13 @@ class DynamicQueue:
                     branches_tasks.append(config)
                 configs.append(branches_tasks)
             except StopIteration:
-                if len(branches_tasks) > 0:
+                if branches_tasks:
                     configs.append(branches_tasks)
                 break
         for i, executor_configs in enumerate(configs):
             self.put((self.configs_generated + i, executor_configs))
 
-        n_configs = sum([len(item) for item in configs])
+        n_configs = sum(len(item) for item in configs)
 
         self.configs_generated += n_configs
         self.configs_remains -= n_configs
@@ -227,14 +227,14 @@ class Distributor:
 
     def run(self):
         """ Run disributor and all workers. """
-        workers = []
         if isinstance(self.research.workers, int):
             worker_configs = [Config() for _ in range(self.research.workers)]
         else:
             worker_configs = self.research.workers
-        for i, worker_config in enumerate(worker_configs):
-            workers.append(Worker(i, worker_config, self.tasks, self.research))
-
+        workers = [
+            Worker(i, worker_config, self.tasks, self.research)
+            for i, worker_config in enumerate(worker_configs)
+        ]
         self.tasks.next_tasks(len(workers))
         self.research.logger.info(f'Start workers (parallel={self.research.parallel})')
 

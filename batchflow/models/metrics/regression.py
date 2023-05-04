@@ -92,11 +92,7 @@ class RegressionMetrics(Metrics):
             self.targets = np.concatenate(targets, axis=0)
             self.predictions = np.concatenate(predictions, axis=0)
 
-        if weights is not None:
-            self.weights = np.array(weights).flatten()
-        else:
-            self.weights = None
-
+        self.weights = np.array(weights).flatten() if weights is not None else None
         self._agg_fn_dict.update(mean=lambda x: np.mean(x))
 
     def __getattr__(self, name):
@@ -122,10 +118,7 @@ class RegressionMetrics(Metrics):
 
     def r2_score(self):
         # pylint: disable=missing-docstring
-        if self.weights is not None:
-            weight = self.weights[:, np.newaxis]
-        else:
-            weight = 1
+        weight = self.weights[:, np.newaxis] if self.weights is not None else 1
         numerator = (weight * (self.predictions - self.targets) ** 2).sum(axis=0)
 
         targets_avg = np.average(self.targets, axis=0, weights=self.weights)

@@ -39,9 +39,7 @@ def eval_expr(expr, no_eval=None, **kwargs):
         except Exception as e:
             raise type(e)(f"Can't evaluate expression: {expr} because \n {str(e)}") from e
     elif isinstance(expr, (list, tuple)):
-        _expr = []
-        for val in expr:
-            _expr.append(eval_expr(val, **kwargs))
+        _expr = [eval_expr(val, **kwargs) for val in expr]
         expr = type(expr)(_expr)
     elif isinstance(expr, (dict, Config)):
         if isinstance(expr, defaultdict):
@@ -101,7 +99,7 @@ UNARY_OPS = {
     '#str': str,
 }
 
-OPERATIONS = {**TERNARY_OPS, **BINARY_OPS, **UNARY_OPS}
+OPERATIONS = TERNARY_OPS | BINARY_OPS | UNARY_OPS
 
 OPERATIONS_SIGNS = {
     '__pos__': '+', '__neg__': '-', '__invert__': '~', '__concat__': '+',
@@ -144,8 +142,8 @@ class MetaNamedExpression(type):
     --------
     `B.images` is equal to B('images'), but requires fewer letters to type
     """
-    def __getattr__(cls, name):
-        return cls(name)
+    def __getattr__(self, name):
+        return self(name)
 
 @add_ops
 class NamedExpression(metaclass=MetaNamedExpression):
@@ -214,12 +212,10 @@ class NamedExpression(metaclass=MetaNamedExpression):
             for arg in self.params.keys() | kwargs.keys():
                 if self.params.get(arg) is None:
                     pkwargs[arg] = kwargs.get(arg)
+                elif isinstance(self.params.get(arg), NamedExpression):
+                    pkwargs[arg] = self.params.get(arg).get(**kwargs)
                 else:
-                    # pre-set parameters should prevail
-                    if isinstance(self.params.get(arg), NamedExpression):
-                        pkwargs[arg] = self.params.get(arg).get(**kwargs)
-                    else:
-                        pkwargs[arg] = self.params.get(arg)
+                    pkwargs[arg] = self.params.get(arg)
 
         if pkwargs.get('batch') is None:
             pkwargs['batch'] = _DummyBatch(pkwargs.get('pipeline'))
@@ -319,7 +315,7 @@ class NamedExpression(metaclass=MetaNamedExpression):
             self.assign(value, *args, **kwargs)
 
     def __repr__(self):
-        return type(self).__name__ + '(' + str(self.name) + ')'
+        return f'{type(self).__name__}({str(self.name)})'
 
     def __setstate__(self, d):
         self.__dict__.update(d)
@@ -369,33 +365,33 @@ class AlgebraicNamedExpression(NamedExpression):
             if self.op in UNARY_OPS:
                 return OPERATIONS_SIGNS[self.op] + repr(self.a)
             if self.op in BINARY_OPS:
-                return repr(self.a) + ' ' + OPERATIONS_SIGNS[self.op] + ' ' + repr(self.b)
+                return f'{repr(self.a)} {OPERATIONS_SIGNS[self.op]} {repr(self.b)}'
 
         if self.op == '__abs__':
-            return '|' + repr(self.a) + '|'
+            return f'|{repr(self.a)}|'
         if self.op == '#str':
-            return 'str(' + repr(self.a) + ')'
+            return f'str({repr(self.a)})'
         if self.op == '#attr':
-            return repr(self.a) + '.' + repr(self.b)[1:-1] # remove ''
+            return f'{repr(self.a)}.{repr(self.b)[1:-1]}'
         if self.op == '#item':
-            return repr(self.a) + '[' + repr(self.b) +']'
+            return f'{repr(self.a)}[{repr(self.b)}]'
         if self.op == '#format':
             a = repr(self.a) if self.a is not None else ''
             b = repr(self.b) if self.b is not None  else ''
-            return 'f' + b + '.' + a
+            return f'f{b}.{a}'
         if self.op == '#slice':
             a = repr(self.a) if self.a is not None else ''
             b = repr(self.b) if self.b is not None else ''
-            c = ':' + repr(self.c) if self.c is not None else ''
-            return a + ':' + b + c
+            c = f':{repr(self.c)}' if self.c is not None else ''
+            return f'{a}:{b}{c}'
 
         if self.op == '#call':
             args = ''
             if self.b is not None:
                 args = repr(self.b)[1:-1]
-                kwargs = ','.join([repr(k) + '=' + repr(v) for k,v in self.c.items()])
-                args = args + ', ' + kwargs if args else kwargs
-            return repr(self.a) + '(' + args + ')'
+                kwargs = ','.join([f'{repr(k)}={repr(v)}' for k,v in self.c.items()])
+                args = f'{args}, {kwargs}' if args else kwargs
+            return f'{repr(self.a)}({args})'
 
         return 'Unknown expression'
 
@@ -431,7 +427,9 @@ class B(NamedExpression):
         name, batch, _ = self._get_params(**kwargs)
 
         if isinstance(batch, _DummyBatch):
-            raise ValueError("Batch expressions are not allowed in static models: B('%s')" % name)
+            raise ValueError(
+                f"Batch expressions are not allowed in static models: B('{name}')"
+            )
         if name is None:
             return batch.copy() if self.copy else batch
         return getattr(batch, name)
@@ -502,17 +500,17 @@ class L(B):
         return L(self, call=(args, kwargs))
 
     def __repr__(self):
-        s = 'L(' + repr(self.name) + ')'
+        s = f'L({repr(self.name)})'
         if 'attr' in self.kwargs:
-            return s + '.' + self.kwargs['attr']
+            return f'{s}.' + self.kwargs['attr']
         if 'item' in self.kwargs:
-            return s + '[' + str(self.kwargs['item']) +']'
+            return f'{s}[' + str(self.kwargs['item']) + ']'
         if 'call' in self.kwargs:
             args, kwargs = self.kwargs['call']
             args = ', '.join(map(str, args)) if args else ''
             kwargs = ', '.join([f"{k}={v}" for k, v in kwargs.items()]) if kwargs else ''
-            args = args + ', ' + kwargs if kwargs else args
-            return s + '(' + args + ')'
+            args = f'{args}, {kwargs}' if kwargs else args
+            return f'{s}({args})'
         return s
 
 
@@ -564,7 +562,7 @@ class C(PipelineNamedExpression):
             else:
                 value = config[name]
         except KeyError:
-            raise KeyError("Name is not found in the config: %s" % name) from None
+            raise KeyError(f"Name is not found in the config: {name}") from None
         return value
 
     def assign(self, value, **kwargs):
@@ -589,8 +587,7 @@ class V(PipelineNamedExpression):
     def get(self, **kwargs):
         """ Return a value of a pipeline variable """
         name, pipeline, _ = self._get_params(**kwargs)
-        value = pipeline.get_variable(name)
-        return value
+        return pipeline.get_variable(name)
 
     def assign(self, value, **kwargs):
         """ Assign a value to a pipeline variable """
@@ -622,8 +619,7 @@ class M(PipelineNamedExpression):
     def get(self, **kwargs):
         """ Return a model from a pipeline """
         name, pipeline, _ = self._get_params(**kwargs)
-        value = pipeline.get_model_by_name(name)
-        return value
+        return pipeline.get_model_by_name(name)
 
     def assign(self, value, batch=None, pipeline=None):
         """ Assign a value to a model """
@@ -680,10 +676,8 @@ class I(PipelineNamedExpression):
             raise ValueError('Total number of iterations is not defined!')
 
         if 'ratio'.startswith(name):
-            ratio = current_iter / total
-            return ratio
-
-        raise ValueError('Unknown key for named expresssion I: %s' % name)
+            return current_iter / total
+        raise ValueError(f'Unknown key for named expresssion I: {name}')
 
     def assign(self, *args, **kwargs):
         """ Assign a value by calling a callable """
@@ -802,12 +796,12 @@ class R(PipelineNamedExpression):
         raise NotImplementedError("Assigning a value to a random variable is not supported")
 
     def __repr__(self):
-        repr_str = 'R(' + str(self.name)
+        repr_str = f'R({str(self.name)}'
         if self.args:
             repr_str += ', ' + ', '.join(str(a) for a in self.args)
         if self.kwargs:
-            repr_str += ', ' + str(self.kwargs)
-        return repr_str + (', size=' + str(self.size) + ')' if self.size else ')')
+            repr_str += f', {str(self.kwargs)}'
+        return repr_str + (f', size={str(self.size)})' if self.size else ')')
 
 
 
@@ -895,7 +889,7 @@ class W(NamedExpression):
     def get(self, **kwargs):
         """ Return a wrapped named expression """
         if not isinstance(self.name, NamedExpression):
-            raise ValueError("Named expressions is expected, but given %s" % self.name)
+            raise ValueError(f"Named expressions is expected, but given {self.name}")
         self.name.set_params(**kwargs)
         return self.name
 

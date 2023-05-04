@@ -102,7 +102,9 @@ class VariableDirectory:
 
     def __add__(self, other):
         if not isinstance(other, VariableDirectory):
-            raise TypeError("VariableDirectory is expected, but given '%s'" % type(other).__name__)
+            raise TypeError(
+                f"VariableDirectory is expected, but given '{type(other).__name__}'"
+            )
 
         new_dir = self.copy()
         new_dir.create_many(other)
@@ -152,15 +154,14 @@ class VariableDirectory:
             if create:
                 logging.warning("Variable '%s' has not been initialized", name)
             else:
-                raise KeyError("Variable '%s' does not exists" % name)
+                raise KeyError(f"Variable '{name}' does not exists")
         return create
 
     def get(self, name, *args, create=False, pipeline=None, **kwargs):
         """ Return a variable value """
         if self._should_create(name, create or len(args) + len(kwargs) > 0):
             self.create(name, *args, pipeline=pipeline, **kwargs)
-        var = self.variables[name].get()
-        return var
+        return self.variables[name].get()
 
     def set(self, name, value, pipeline=None):
         """ Set a variable value """

@@ -51,20 +51,19 @@ def partialmethod(func, *frozen_args, **frozen_kwargs):
 def copy1(data):
     """ Copy data exactly 1 level deep """
     if isinstance(data, tuple):
-        out = tuple(_copy1_list(data))
+        return tuple(_copy1_list(data))
     elif isinstance(data, list):
-        out = _copy1_list(data)
+        return _copy1_list(data)
     elif isinstance(data, dict):
-        out = _copy1_dict(data)
+        return _copy1_dict(data)
     else:
-        out = copy.copy(data)
-    return out
+        return copy.copy(data)
 
 def _copy1_list(data):
     return [copy.copy(item) for item in data]
 
 def _copy1_dict(data):
-    return dict((key, copy.copy(item)) for key, item in data.items())
+    return {key: copy.copy(item) for key, item in data.items()}
 
 def save_data_to(data, dst, **kwargs):
     """ Store data to a given destination
@@ -118,14 +117,6 @@ def read_data_from(src, **kwargs):
         data = [None] * len(src)
 
     for i, var in enumerate(src_):
-        if isinstance(var, NamedExpression):
-            data[i] = var.get(**kwargs)
-        else:
-            data[i] = var
-
-    if isinstance(src, (tuple, list)):
-        data = type(src)(data)
-    else:
-        data = data[0]
-
+        data[i] = var.get(**kwargs) if isinstance(var, NamedExpression) else var
+    data = type(src)(data) if isinstance(src, (tuple, list)) else data[0]
     return data

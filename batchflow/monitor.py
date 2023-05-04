@@ -289,7 +289,7 @@ MONITOR_ALIASES = {alias: monitor for monitor, aliases in MONITOR_ALIASES.items(
 class Monitor(list):
     """ Holder for multiple monitors with simple visualization method. """
     def __init__(self, monitors=('cpu', 'memory', 'gpu'), frequency=0.1, **kwargs):
-        monitors = [monitors] if not isinstance(monitors, (tuple, list)) else monitors
+        monitors = monitors if isinstance(monitors, (tuple, list)) else [monitors]
         monitors = [MONITOR_ALIASES[monitor.lower()](frequency=frequency, **kwargs)
                     if isinstance(monitor, str) else monitor
                     for monitor in monitors]

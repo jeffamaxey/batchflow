@@ -34,7 +34,7 @@ class PyramidPooling(nn.Module):
         super().__init__()
 
         spatial_shape = np.array(get_shape(inputs)[2:])
-        filters = filters if filters else 'same // {}'.format(len(pyramid))
+        filters = filters if filters else f'same // {len(pyramid)}'
 
         modules = nn.ModuleList()
         for level in pyramid:
@@ -45,9 +45,18 @@ class PyramidPooling(nn.Module):
                 pool_size = tuple(np.ceil(spatial_shape / level).astype(np.int32))
                 pool_strides = tuple(np.floor((spatial_shape - 1) / level + 1).astype(np.int32))
 
-                module = ConvBlock(inputs=x, layout='p' + layout + 'b', filters=filters, kernel_size=kernel_size,
-                                   pool_op=pool_op, pool_size=pool_size, pool_strides=pool_strides,
-                                   factor=None, shape=tuple(spatial_shape), **kwargs)
+                module = ConvBlock(
+                    inputs=x,
+                    layout=f'p{layout}b',
+                    filters=filters,
+                    kernel_size=kernel_size,
+                    pool_op=pool_op,
+                    pool_size=pool_size,
+                    pool_strides=pool_strides,
+                    factor=None,
+                    shape=tuple(spatial_shape),
+                    **kwargs,
+                )
             modules.append(module)
 
         self.blocks = modules
@@ -153,12 +162,9 @@ class KSAC(nn.Module):
 
         out_filters = filters or get_num_channels(inputs)
         feature_filters = max(1, out_filters // len(rates))
-        tensors = []
-
         # Bottleneck: 1x1 convolution
         self.bottleneck = ConvBlock(inputs=inputs, layout='cna', filters=feature_filters, kernel_size=1, **kwargs)
-        tensors.append(self.bottleneck(inputs))
-
+        tensors = [self.bottleneck(inputs)]
         # Convolutions with different dilations and shared weights
         self.layer = Conv(inputs=inputs, filters=feature_filters, kernel_size=kernel_size).to(inputs.device)
         tensor = self.layer(inputs)

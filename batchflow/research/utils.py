@@ -43,9 +43,7 @@ def get_metrics(pipeline, metrics_var, metrics_name, *args, agg='mean', **kwargs
     metrics_name = metrics_name if isinstance(metrics_name, list) else [metrics_name]
     metrics = pipeline.get_variable(metrics_var).evaluate(metrics_name, *args, agg=agg, **kwargs)
     values = [metrics[name] for name in metrics_name]
-    if len(values) == 1:
-        return values[0]
-    return values
+    return values[0] if len(values) == 1 else values
 
 def convert_research_results(research_name, new_name=None, bar=True):
     """ Convert research results from old format to the new. Only results will be transformed, old research can not be
@@ -244,11 +242,12 @@ def plot_results_by_config(results, variables, figsize=None, layout=None, **kwar
 
             cols = ['repetition', 'cv_split'] if 'cv_split' in df.columns else 'repetition'
 
-            res = (df.pivot_table(index='iteration', columns=cols, values=val)
-                     .rename(columns=lambda s: 'rep ' + str(s), level=0))
+            res = df.pivot_table(
+                index='iteration', columns=cols, values=val
+            ).rename(columns=lambda s: f'rep {str(s)}', level=0)
 
             if 'cv_split' in df.columns:
-                res = res.rename(columns=lambda s: 'split ' + str(s), level=1)
+                res = res.rename(columns=lambda s: f'split {str(s)}', level=1)
 
             res.plot(ax=ax, **kwargs)
             ax.set_title(config)
@@ -258,7 +257,7 @@ def plot_results_by_config(results, variables, figsize=None, layout=None, **kwar
             ax.legend()
 
 def show_research(df, layouts=None, titles=None, average_repetitions=False, log_scale=False,
-                  rolling_window=None, color=None, **kwargs): # pylint: disable=too-many-branches
+                  rolling_window=None, color=None, **kwargs):    # pylint: disable=too-many-branches
     """Show plots given by research dataframe.
 
     Parameters
@@ -296,8 +295,10 @@ def show_research(df, layouts=None, titles=None, average_repetitions=False, log_
         layouts = []
         for nlabel, ndf in df.groupby("name"):
             ndf = ndf.drop(['config', 'name', 'iteration', 'repetition'], axis=1).dropna(axis=1)
-            for attr in ndf.columns.values:
-                layouts.append('/'.join([str(nlabel), str(attr)]))
+            layouts.extend(
+                '/'.join([str(nlabel), str(attr)])
+                for attr in ndf.columns.values
+            )
     titles = layouts if titles is None else titles
     if isinstance(log_scale, bool):
         log_scale = [log_scale] * len(layouts)
@@ -434,17 +435,14 @@ def plot_images(images, labels=None, proba=None, ncols=5, classes=None, models_n
         proba = (proba, )
         if models_names is None:
             models_names = ['']
-    else:
-        if models_names is None:
-            models_names = ['Model ' + str(i+1) for i in range(len(proba))]
+    elif models_names is None:
+        models_names = [f'Model {str(i + 1)}' for i in range(len(proba))]
 
     # if the classes names are not specified they can be implicitely infered from the `proba` shape,
     if classes is None:
         if proba[0] is not None:
             classes = [str(i) for i in range(proba[0].shape[1])]
-        elif labels is None:
-            pass
-        elif proba[0] is None:
+        elif labels is not None:
             raise ValueError('Specify classes')
 
     n_items = len(images)
@@ -456,7 +454,7 @@ def plot_images(images, labels=None, proba=None, ncols=5, classes=None, models_n
         ax[i].imshow(images[i])
         if labels is not None: # plot images with labels
             true_class_name = classes[labels[i]]
-            title = 'Real answer: {}'.format(true_class_name)
+            title = f'Real answer: {true_class_name}'
             if proba[0] is not None: # plot images with labels and predictions
                 for j, model_proba in enumerate(proba): # the case of preidctions of several models
                     class_pred = np.argmax(model_proba, axis=1)[i]

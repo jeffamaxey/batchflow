@@ -58,7 +58,7 @@ class Research:
         self.redirect_stdout = True
         self.redirect_stderr = True
 
-        self._env = dict() # current state of git repo and other environment information.
+        self._env = {}
 
         self.workers = 1
         self.branches = 1
@@ -153,7 +153,7 @@ class Research:
             if self.dump_results:
                 if not os.path.exists(os.path.join(self.name, 'env', dst)):
                     os.makedirs(os.path.join(self.name, 'env', dst))
-                with open(os.path.join(self.name, 'env', dst, filename + '.txt'), 'a') as file:
+                with open(os.path.join(self.name, 'env', dst, f'{filename}.txt'), 'a') as file:
                     file.write(result)
             else:
                 self._env[os.path.join(dst, filename)] = self._env.get(os.path.join(dst, filename), '') + result
@@ -192,7 +192,7 @@ class Research:
     @property
     def env(self):
         """ Environment state. """
-        env = dict()
+        env = {}
         if self.dump_results:
             filenames = glob.glob(os.path.join(self.name, 'env', '*'))
             for filename in filenames:
@@ -453,34 +453,35 @@ class Research:
     def terminate(self, kill_processes=False, force=False, wait=True):
         """ Kill all research processes. """
         # TODO: killed processes don't release GPU.
-        if not self._is_loaded:
-            if not force and self.monitor.in_progress:
-                answer = input(f'{self.name} is in progress. Are you sure? [y/n]').lower()
-                answer = len(answer) > 0 and 'yes'.startswith(answer)
-            else:
-                answer = True
-            if force or answer:
-                self.logger.info("Stop research.")
-                if self.monitor is not None:
-                    self.monitor.stop(wait=wait)
+        if self._is_loaded:
+            return
+        if not force and self.monitor.in_progress:
+            answer = input(f'{self.name} is in progress. Are you sure? [y/n]').lower()
+            answer = len(answer) > 0 and 'yes'.startswith(answer)
+        else:
+            answer = True
+        if force or answer:
+            self.logger.info("Stop research.")
+            if self.monitor is not None:
+                self.monitor.stop(wait=wait)
 
-                self.monitor.close_manager()
-                self.results.close_manager()
-                self.profiler.close_manager()
+            self.monitor.close_manager()
+            self.results.close_manager()
+            self.profiler.close_manager()
 
-                if self.detach:
-                    kill_processes = True
+            if self.detach:
+                kill_processes = True
 
-                if kill_processes and self.monitor is not None:
-                    self.logger.info("Terminate research processes")
+            if kill_processes and self.monitor is not None:
+                self.logger.info("Terminate research processes")
 
-                    order = {'EXECUTOR': 1, 'WORKER': 2, 'DETACHED_PROCESS': 3, 'MONITOR': 4}
-                    processes_to_kill = sorted(self.monitor.processes.items(), key=lambda x: order[x[1]])
-                    for pid, process_type in processes_to_kill:
-                        if pid is not None and psutil.pid_exists(pid):
-                            process = psutil.Process(pid)
-                            process.terminate()
-                            self.logger.info(f"Terminate {process_type} [pid:{pid}]")
+                order = {'EXECUTOR': 1, 'WORKER': 2, 'DETACHED_PROCESS': 3, 'MONITOR': 4}
+                processes_to_kill = sorted(self.monitor.processes.items(), key=lambda x: order[x[1]])
+                for pid, process_type in processes_to_kill:
+                    if pid is not None and psutil.pid_exists(pid):
+                        process = psutil.Process(pid)
+                        process.terminate()
+                        self.logger.info(f"Terminate {process_type} [pid:{pid}]")
 
     def create_logger(self):
         """ Create research logger. """
@@ -503,8 +504,8 @@ class Research:
             raise TypeError(f'Folder "{name}" is not research folder.')
         return cls._load(name)
 
-    def _load(name):
-        with open(os.path.join(name, 'research.dill'), 'rb') as f:
+    def _load(self):
+        with open(os.path.join(self, 'research.dill'), 'rb') as f:
             research = dill.load(f)
         if research.dump_results:
             research.results = ResearchResults(research.name, research.dump_results)
@@ -530,9 +531,8 @@ class Research:
         if not os.path.exists(name):
             warnings.warn(f"Folder {name} doesn't exist.")
         else:
-            if not force:
-                if not cls.folder_is_research(name):
-                    raise ValueError(f'{name} is not a research folder.')
+            if not force and not cls.folder_is_research(name):
+                raise ValueError(f'{name} is not a research folder.')
             answer = True
             if ask:
                 answer = input(f'Remove {name}? [y/n]').lower()
@@ -558,15 +558,13 @@ class Research:
 
         params = ['name', 'workers', 'branches', 'n_iters', 'devices', 'dump_results',
                   'parallel', 'loglevel', 'executor_target', 'executor_class']
-        params_repr = []
-        for param in params:
-            params_repr += [f"{param}: {getattr(self, param, None)}"]
+        params_repr = [f"{param}: {getattr(self, param, None)}" for param in params]
         params_repr = '\n'.join(params_repr)
 
         items = {'params': params_repr, 'experiment': str(self.experiment), 'domain': str(self.domain)}
-        for name in items:
+        for name, value in items.items():
             repr += f"{name}:\n"
-            repr += '\n'.join([spacing + item for item in str(items[name]).split('\n')])
+            repr += '\n'.join([spacing + item for item in str(value).split('\n')])
             repr += 2 * '\n'
 
         return repr

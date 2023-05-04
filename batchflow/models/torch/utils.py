@@ -31,8 +31,7 @@ def unpack_fn_from_config(param, config=None):
             name, args = item, {}
         res.append((name, args))
 
-    res = res[0] if len(res) == 1 else res
-    return res
+    return res[0] if len(res) == 1 else res
 
 
 def get_shape(inputs, default_shape=None):
@@ -95,19 +94,21 @@ def calc_padding(inputs, padding=0, kernel_size=None, dilation=1, transposed=Fal
     shape = get_shape(inputs)
 
     if isinstance(padding, str):
-        if padding == 'valid':
+        if (
+            padding != 'valid'
+            and padding == 'same'
+            and transposed
+            or padding == 'valid'
+        ):
             result = 0
         elif padding == 'same':
-            if transposed:
-                result = 0
-            else:
-                if isinstance(kernel_size, int):
-                    kernel_size = (kernel_size,) * dims
-                if isinstance(dilation, int):
-                    dilation = (dilation,) * dims
-                if isinstance(stride, (int, np.int64)):
-                    stride = (stride,) * dims
-                result = tuple(_get_padding(kernel_size[i], shape[i+2], dilation[i], stride[i]) for i in range(dims))
+            if isinstance(kernel_size, int):
+                kernel_size = (kernel_size,) * dims
+            if isinstance(dilation, int):
+                dilation = (dilation,) * dims
+            if isinstance(stride, (int, np.int64)):
+                stride = (stride,) * dims
+            result = tuple(_get_padding(kernel_size[i], shape[i+2], dilation[i], stride[i]) for i in range(dims))
         else:
             raise ValueError("padding can be 'same' or 'valid'")
     elif isinstance(padding, (int, tuple)):
@@ -120,10 +121,9 @@ def _get_padding(kernel_size=None, input_shape=None, dilation=1, stride=1):
     kernel_size = dilation * (kernel_size - 1) + 1
     if stride >= input_shape:
         padding = max(0, kernel_size - input_shape)
+    elif input_shape % stride == 0:
+        padding = kernel_size - stride
     else:
-        if input_shape % stride == 0:
-            padding = kernel_size - stride
-        else:
-            padding = kernel_size - input_shape % stride
+        padding = kernel_size - input_shape % stride
     padding = (padding // 2, padding - padding // 2)
     return padding

@@ -1,5 +1,6 @@
 """ Test research with tf model """
 
+
 import sys
 
 sys.path.append("../../..")
@@ -58,4 +59,10 @@ research = (Research()
 n_workers = 1 if len(sys.argv) <= 1 else int(sys.argv[1])
 gpu_list = [2, 4, 5, 6]
 
-research.run(n_reps=8, n_iters=1000, workers=n_workers, name='tf_research_'+str(n_workers), gpu=gpu_list[:n_workers])
+research.run(
+    n_reps=8,
+    n_iters=1000,
+    workers=n_workers,
+    name=f'tf_research_{n_workers}',
+    gpu=gpu_list[:n_workers],
+)

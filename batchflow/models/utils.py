@@ -5,16 +5,13 @@ def unpack_args(args, layer_no, layers_max):
     """ Return layer parameters """
     new_args = {}
     for arg in args:
-        if isinstance(args[arg], list):
-            if len(args[arg]) >= layers_max:
-                arg_value = args[arg][layer_no]
-            else:
-                arg_value = args[arg]
-        elif isinstance(args[arg], dict): # for args with dict-like structure, e.g. branch in ResBlock
-            arg_value = unpack_args(args[arg], layer_no, layers_max)
-        else:
+        if isinstance(args[arg], list) and len(args[arg]) >= layers_max:
+            arg_value = args[arg][layer_no]
+        elif isinstance(args[arg], list) or not isinstance(args[arg], dict):
             arg_value = args[arg]
-        new_args.update({arg: arg_value})
+        else: # for args with dict-like structure, e.g. branch in ResBlock
+            arg_value = unpack_args(args[arg], layer_no, layers_max)
+        new_args[arg] = arg_value
     return new_args
 
 

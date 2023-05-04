@@ -79,14 +79,18 @@ def simple_research(tmp_path):
 @pytest.fixture
 def research_with_controller(tmp_path):
     domain = Domain({'layout': ['f', 'faf']}) @ Domain({'units': [[10], [100, 10]]})
-    research = (Research(name=os.path.join(tmp_path, 'research'), domain=domain, n_reps=2)
+    return (
+        Research(
+            name=os.path.join(tmp_path, 'research'), domain=domain, n_reps=2
+        )
         .add_instance('controller', Model)
         .add_pipeline('controller.train_ppl')
         .add_pipeline('controller.test_ppl', run=True, when='last')
-        .add_callable('controller.eval_metrics', metrics='accuracy', when='last')
+        .add_callable(
+            'controller.eval_metrics', metrics='accuracy', when='last'
+        )
         .save(O('controller.eval_metrics'), 'accuracy', when='last')
     )
-    return research
 
 SIZE_CALC = {
     '+': lambda x, y: x + y,
@@ -102,7 +106,7 @@ class TestDomain:
         option_1 = Domain({'a': a}) #pylint:disable=unused-variable
         option_2 = Domain(b=b) #pylint:disable=unused-variable
 
-        if not (op == '@' and len(a) != len(b)):
+        if op != '@' or len(a) == len(b):
             domain = eval(f'option_1 {op} option_2') # pylint:disable=eval-used
             domain.set_iter_params(n_reps=n_reps)
 
@@ -477,7 +481,9 @@ class TestResearch:
             parsed_id = research.results.df.id.apply(lambda x: x.split('_'))
 
             # check the number of digits for each prefix code
-            assert parsed_id.apply(lambda x: all([len(i) == create_id_prefix for i in x[:-1]])).all()
+            assert parsed_id.apply(
+                lambda x: all(len(i) == create_id_prefix for i in x[:-1])
+            ).all()
 
 
     def test_remove(self, simple_research):

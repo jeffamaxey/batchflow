@@ -56,7 +56,7 @@ class BasePascal(ImagesOpenset):
             file_size = int(r.headers['Content-Length'])
             chunk = 1
             chunk_size = 1024
-            num_bars = int(file_size / chunk_size)
+            num_bars = file_size // chunk_size
             with open(localname, 'wb') as f:
                 for chunk in tqdm.tqdm(r.iter_content(chunk_size=chunk_size), total=num_bars, unit='KB',
                                        desc=filename, leave=True):
@@ -68,7 +68,7 @@ class BasePascal(ImagesOpenset):
 
     def _image_path(self, name):
         """ Return the path to the .jpg image in the archive by its name """
-        return os.path.join(dirname(self.SETS_PATH), 'JPEGImages', name + '.jpg')
+        return os.path.join(dirname(self.SETS_PATH), 'JPEGImages', f'{name}.jpg')
 
     def _extract_image(self, archive, file):
         data = archive.extractfile(file).read()
@@ -76,7 +76,7 @@ class BasePascal(ImagesOpenset):
 
     def _extract_ids(self, archive, part):
         """ Train and test images ids are located in specific for each task folder"""
-        part_path = os.path.join(self.SETS_PATH, self.task, part) + '.txt'
+        part_path = f'{os.path.join(self.SETS_PATH, self.task, part)}.txt'
         raw_ids = archive.extractfile(part_path)
         list_ids = raw_ids.read().decode().split('\n')
         return list_ids[:-1]
@@ -95,7 +95,9 @@ class PascalSegmentation(BasePascal):
 
     def _mask_path(self, name):
         """ Return the path in the archive to the mask which is .png image by its name"""
-        return os.path.join(dirname(self.SETS_PATH), 'SegmentationClass', name + '.png')
+        return os.path.join(
+            dirname(self.SETS_PATH), 'SegmentationClass', f'{name}.png'
+        )
 
     def download(self, path):
         """ Download a dataset from the source web-site """
@@ -140,8 +142,7 @@ class PascalClassification(BasePascal):
 
     def _process_targets(self, targets):
         np.place(targets, targets == 0, np.sign(self.replace_zero))
-        labels = (targets > 0).astype(int)
-        return labels
+        return (targets > 0).astype(int)
 
     def download(self, path):
         """ Download a dataset from the source web-site """

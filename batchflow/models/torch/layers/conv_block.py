@@ -340,9 +340,8 @@ class BaseConvBlock(nn.ModuleDict):
                 # Create layer description
                 shape_before = (None, *get_shape(inputs)[1:])
                 shape_after = (None, *get_shape(skip)[1:])
-                layer_desc = 'Layer {},    skip "{}": {} -> {}'.format(i, letter, shape_before, shape_after)
+                layer_desc = f'Layer {i},    skip "{letter}": {shape_before} -> {shape_after}'
 
-            # Combine multiple inputs with addition, concatenation, etc
             elif letter in self.COMBINE_LETTERS:
                 # Make layer arguments: pop additional inputs from storage
                 args = self.fill_layer_params(layer_name, layer_class, inputs, layout_dict[letter_group])
@@ -358,17 +357,16 @@ class BaseConvBlock(nn.ModuleDict):
                 # Create layer description: one line for each of the inputs
                 shape_before = [str((None, *shape[1:])) for shape in shape_before]
                 shape_after = (None, *shape_after[1:])
-                layer_desc = 'Layer {}, combine "{}": {}'.format(i, letter, shape_before[0])
+                layer_desc = f'Layer {i}, combine "{letter}": {shape_before[0]}'
                 for shape in shape_before[1:]:
                     layer_desc += '\n' + ' '*(len(layer_desc) - len(shape)) + shape
-                layer_desc += ' -> {}'.format(shape_after)
+                layer_desc += f' -> {shape_after}'
 
-            # Regular layer
             else:
                 # Check if we need to skip current layer
                 layer_args = self.kwargs.get(layer_name, {})
                 skip_layer = layer_args is False \
-                             or isinstance(layer_args, dict) and layer_args.get('disable', False)
+                                 or isinstance(layer_args, dict) and layer_args.get('disable', False)
 
                 # Make layer argument
                 if skip_layer:
@@ -376,7 +374,7 @@ class BaseConvBlock(nn.ModuleDict):
                 elif letter in self.DEFAULT_LETTERS:
                     args = self.fill_layer_params(layer_name, layer_class, inputs, layout_dict[letter_group])
                 elif letter not in self.LETTERS_LAYERS.keys():
-                    raise ValueError('Unknown letter symbol - %s' % letter)
+                    raise ValueError(f'Unknown letter symbol - {letter}')
 
                 # Additional params for some of the layers
                 if letter_group.lower() == 'p':
@@ -393,12 +391,12 @@ class BaseConvBlock(nn.ModuleDict):
 
                     # Create layer description
                     shape_before, shape_after = (None, *shape_before[1:]), (None, *shape_after[1:])
-                    layer_desc = 'Layer {},  letter "{}": {} -> {}'.format(i, letter, shape_before, shape_after)
+                    layer_desc = f'Layer {i},  letter "{letter}": {shape_before} -> {shape_after}'
 
             self.update([(layer_desc, layer)])
 
     def extra_repr(self):
-        return 'layout={}\n'.format(self.layout)
+        return f'layout={self.layout}\n'
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -492,24 +490,24 @@ class ConvBlock(nn.Sequential):
 
     def _make_layer(self, *args, inputs=None, base_block=BaseConvBlock, **kwargs):
         # each element in `args` is a dict or module: make a sequential out of them
-        if args:
-            layers = []
-            for item in args:
-                if isinstance(item, dict):
-                    block = item.pop('base_block', None) or item.pop('base', None) or base_block
-                    block_args = {'inputs': inputs, **dict(Config(kwargs) + Config(item))}
-                    layer = block(**block_args)
-                    inputs = layer(inputs)
-                    layers.append(layer)
-                elif isinstance(item, nn.Module):
-                    inputs = item(inputs)
-                    layers.append(item)
-                else:
-                    raise ValueError('Positional arguments of ConvBlock must be either dicts or nn.Modules, \
+        if not args:
+            # one block only
+            return base_block(inputs=inputs, **kwargs)
+        layers = []
+        for item in args:
+            if isinstance(item, dict):
+                block = item.pop('base_block', None) or item.pop('base', None) or base_block
+                block_args = {'inputs': inputs, **dict(Config(kwargs) + Config(item))}
+                layer = block(**block_args)
+                inputs = layer(inputs)
+                layers.append(layer)
+            elif isinstance(item, nn.Module):
+                inputs = item(inputs)
+                layers.append(item)
+            else:
+                raise ValueError('Positional arguments of ConvBlock must be either dicts or nn.Modules, \
                                       got instead {}'.format(type(item)))
-            return nn.Sequential(*layers)
-        # one block only
-        return base_block(inputs=inputs, **kwargs)
+        return nn.Sequential(*layers)
 
     def _make_inputs(self):
         inputs = np.zeros(self.input_shape, dtype=np.float32)
@@ -529,9 +527,8 @@ class ConvBlock(nn.Sequential):
         return nn.Sequential(*layers)
 
     def __repr__(self):
-        if getattr(self, 'short_repr', False):
-            if len(self) == 1:
-                msg = self.__class__.__name__ + '\n'
-                msg += torch.nn.modules.module._addindent(repr(self[0]), 2)
-                return msg
+        if getattr(self, 'short_repr', False) and len(self) == 1:
+            msg = self.__class__.__name__ + '\n'
+            msg += torch.nn.modules.module._addindent(repr(self[0]), 2)
+            return msg
         return super().__repr__()

@@ -112,8 +112,9 @@ class SelfAttention(nn.Module):
         elif callable(attention):
             self.op = attention(inputs, **kwargs)
         else:
-            raise ValueError('Attention mode must be a callable or one from {}, instead got {}.'
-                             .format(list(self.ATTENTIONS.keys()), attention))
+            raise ValueError(
+                f'Attention mode must be a callable or one from {list(self.ATTENTIONS.keys())}, instead got {attention}.'
+            )
 
     def forward(self, inputs):
         return self.op(inputs)
@@ -121,8 +122,8 @@ class SelfAttention(nn.Module):
     def extra_repr(self):
         """ Report used attention in a repr. """
         if isinstance(self.attention, (str, bool)):
-            return 'op={}'.format(self.attention)
-        return 'op=callable {}'.format(self.attention.__name__)
+            return f'op={self.attention}'
+        return f'op=callable {self.attention.__name__}'
 
 
 
@@ -163,9 +164,9 @@ class SEBlock(nn.Module):
     def __repr__(self):
         if getattr(self, 'debug', False):
             return super().__repr__()
-        layer_desc = ('{class}(filters={filters}, ratio={ratio}, bias={bias})'
-                      .format(**self.desc_kwargs))
-        return layer_desc
+        return '{class}(filters={filters}, ratio={ratio}, bias={bias})'.format(
+            **self.desc_kwargs
+        )
 
 
 class SCSEBlock(nn.Module):
@@ -201,9 +202,7 @@ class SCSEBlock(nn.Module):
     def __repr__(self):
         if getattr(self, 'debug', False):
             return super().__repr__()
-        layer_desc = ('{class}(ratio={ratio})'
-                      .format(**self.desc_kwargs))
-        return layer_desc
+        return '{class}(ratio={ratio})'.format(**self.desc_kwargs)
 
 
 
@@ -254,9 +253,9 @@ class SimpleSelfAttention(nn.Module):
     def __repr__(self):
         if getattr(self, 'debug', False):
             return super().__repr__()
-        layer_desc = ('{class}(layout={layout}, kernel_size={kernel_size}, ratio={ratio})'
-                      .format(**self.desc_kwargs))
-        return layer_desc
+        return '{class}(layout={layout}, kernel_size={kernel_size}, ratio={ratio})'.format(
+            **self.desc_kwargs
+        )
 
 
 
@@ -281,11 +280,22 @@ class BAM(nn.Module):
         in_channels = get_num_channels(inputs)
 
         self.bam_attention = ConvBlock(
-            inputs=inputs, layout='R' + 'cna'*3  + 'c' + '+ a',
-            filters=['same//{}'.format(ratio), 'same', 'same', 1], kernel_size=[1, 3, 3, 1],
-            dilation_rate=[1, dilation_rate, dilation_rate, 1], activation=['relu']*3+['sigmoid'], bias=True,
-            branch={'layout': 'Vfnaf >', 'units': [in_channels//ratio, in_channels], 'dim': get_num_dims(inputs),
-                    'activation': 'relu', 'bias': True, **kwargs})
+            inputs=inputs,
+            layout='R' + 'cna' * 3 + 'c' + '+ a',
+            filters=[f'same//{ratio}', 'same', 'same', 1],
+            kernel_size=[1, 3, 3, 1],
+            dilation_rate=[1, dilation_rate, dilation_rate, 1],
+            activation=['relu'] * 3 + ['sigmoid'],
+            bias=True,
+            branch={
+                'layout': 'Vfnaf >',
+                'units': [in_channels // ratio, in_channels],
+                'dim': get_num_dims(inputs),
+                'activation': 'relu',
+                'bias': True,
+                **kwargs,
+            },
+        )
 
         self.desc_kwargs = {
             'class': self.__class__.__name__,
@@ -301,9 +311,10 @@ class BAM(nn.Module):
     def __repr__(self):
         if getattr(self, 'debug', False):
             return super().__repr__()
-        layer_desc = ('{class}({in_filters}, {out_filters}, '
-                      'dilation_rate={dilation_rate}, ratio={ratio})').format(**self.desc_kwargs)
-        return layer_desc
+        return (
+            '{class}({in_filters}, {out_filters}, '
+            'dilation_rate={dilation_rate}, ratio={ratio})'
+        ).format(**self.desc_kwargs)
 
 
 
@@ -378,9 +389,10 @@ class CBAM(nn.Module):
     def __repr__(self):
         if getattr(self, 'debug', False):
             return super().__repr__()
-        layer_desc = ('{class}({in_filters}, {out_filters}, '
-                      'pool_ops={pool_ops}, ratio={ratio})').format(**self.desc_kwargs)
-        return layer_desc
+        return (
+            '{class}({in_filters}, {out_filters}, '
+            'pool_ops={pool_ops}, ratio={ratio})'
+        ).format(**self.desc_kwargs)
 
 
 
@@ -417,12 +429,19 @@ class FPA(nn.Module):
         spatial_shape = get_shape(inputs)[2:]
         num_dims = get_num_dims(inputs)
 
-        self.attention = ConvBlock(inputs=inputs, layout='V >' + layout + 'b', kernel_size=1,
-                                   filters='same', shape=spatial_shape, dim=num_dims, **kwargs)
+        self.attention = ConvBlock(
+            inputs=inputs,
+            layout=f'V >{layout}b',
+            kernel_size=1,
+            filters='same',
+            shape=spatial_shape,
+            dim=num_dims,
+            **kwargs,
+        )
 
-        enc_layout = ('B' + downsample_layout + layout) * depth # B pcna B pcna B pcna
+        enc_layout = f'B{downsample_layout}{layout}' * depth
         emb_layout = layout + upsample_layout # cnat
-        combine_layout = ('+' + upsample_layout) * (depth - 1) + '*' # +t+t*
+        combine_layout = f'+{upsample_layout}' * (depth - 1) + '*'
         main_layout = enc_layout + emb_layout + combine_layout # B pcna B pcna B pcna cnat +t+t*
         main_strides = [1] * (depth + 1) + [factor] * depth # [1, 1, 1, 1, 2, 2, 2]
 
@@ -475,9 +494,10 @@ class FPA(nn.Module):
     def __repr__(self):
         if getattr(self, 'debug', False):
             return super().__repr__()
-        layer_desc = ('{class}(pyramid_kernel_size={pyramid_kernel_size}, bottleneck={bottleneck}, '
-                      'use_dilation={use_dilation}, factor={factor})').format(**self.desc_kwargs)
-        return layer_desc
+        return (
+            '{class}(pyramid_kernel_size={pyramid_kernel_size}, bottleneck={bottleneck}, '
+            'use_dilation={use_dilation}, factor={factor})'
+        ).format(**self.desc_kwargs)
 
 
 
@@ -536,12 +556,23 @@ class SelectiveKernelConv(nn.Module):
 
         self.combine = Combine(op='sum')
         tensor = self.combine(tensors)
-        self.fuse = ConvBlock(inputs=tensor, layout='Vfna>', units='max(same // {}, {})'.format(ratio, min_units),
-                              dim=num_dims, bias=bias)
+        self.fuse = ConvBlock(
+            inputs=tensor,
+            layout='Vfna>',
+            units=f'max(same // {ratio}, {min_units})',
+            dim=num_dims,
+            bias=bias,
+        )
 
         fused_tensor = self.fuse(tensor)
-        self.attention_branches = nn.ModuleList([
-            Conv(inputs=fused_tensor, filters=filters, kernel_size=1, bias=bias) for i in range(num_kernels)])
+        self.attention_branches = nn.ModuleList(
+            [
+                Conv(
+                    inputs=fused_tensor, filters=filters, kernel_size=1, bias=bias
+                )
+                for _ in range(num_kernels)
+            ]
+        )
 
     def forward(self, x):
         tensors = [layer(x) for layer in self.split_layers]
@@ -558,9 +589,10 @@ class SelectiveKernelConv(nn.Module):
     def __repr__(self):
         if getattr(self, 'debug', False):
             return super().__repr__()
-        layer_desc = ('{class}({in_filters}, {out_filters}, '
-                      'kernel_sizes={kernel_sizes}, dilations={dilations})').format(**self.desc_kwargs)
-        return layer_desc
+        return (
+            '{class}({in_filters}, {out_filters}, '
+            'kernel_sizes={kernel_sizes}, dilations={dilations})'
+        ).format(**self.desc_kwargs)
 
 
 class SplitAttentionConv(nn.Module):
@@ -637,7 +669,7 @@ class SplitAttentionConv(nn.Module):
 
         if self.radix > 1:
             inputs = torch.split(inputs, rchannel//self.radix, dim=1)
-            inputs = sum([inp*split for (inp, split) in zip(inputs, splitted)])
+            inputs = sum(inp*split for (inp, split) in zip(inputs, splitted))
         else:
             inputs = inputs * x
 
@@ -651,18 +683,17 @@ class SplitAttentionConv(nn.Module):
             concatted = x
         att = self.avgpool_conv1d(concatted)
         att = self.rsoftmax(att)
-        if self.radix > 1:
-            attens = torch.split(att, rchannel//self.radix, dim=1)
-            result = sum([att*split for (att, split) in zip(attens, splitted)])
-        else:
-            result = att * x
-        return result
+        if self.radix <= 1:
+            return att * x
+        attens = torch.split(att, rchannel//self.radix, dim=1)
+        return sum(att*split for (att, split) in zip(attens, splitted))
 
     def __repr__(self):
         if getattr(self, 'debug', False):
             return super().__repr__()
-        layer_desc = ('{class}({in_filters}, {out_filters}, '
-                      'radix={radix}, cardinality={cardinality}, '
-                      'reduction_factor={reduction_factor}, '
-                      'scaling_factor={scaling_factor})').format(**self.desc_kwargs)
-        return layer_desc
+        return (
+            '{class}({in_filters}, {out_filters}, '
+            'radix={radix}, cardinality={cardinality}, '
+            'reduction_factor={reduction_factor}, '
+            'scaling_factor={scaling_factor})'
+        ).format(**self.desc_kwargs)

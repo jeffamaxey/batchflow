@@ -300,8 +300,7 @@ class ExecutableUnit:
         """ Create copy of the unit. """
         attrs = ['name', 'callable', 'generator', 'root', 'when', 'args', 'kwargs', 'save_to', 'save_output_dict']
         params = {attr if attr !='callable' else 'func': copy(getattr(self, attr)) for attr in attrs}
-        new_unit = ExecutableUnit(**params, **copy(self.other_kwargs))
-        return new_unit
+        return ExecutableUnit(**params, **copy(self.other_kwargs))
 
     def __getattr__(self, key):
         return getattr(self.src, key)
@@ -335,19 +334,15 @@ class Experiment:
             self.instance_creators = OrderedDict(instance_creators)
         else:
             self.instance_creators = OrderedDict()
-        if actions is None:
-            self.actions = OrderedDict() # unit_name : (instance_name, attr_name) or callable
-        else:
-            self.actions = actions
+        self.actions = OrderedDict() if actions is None else actions
         self._namespaces = namespaces if namespaces is not None else []
 
 
         self._is_alive = True # should experiment be executed or not. Becomes False when Exceptions was raised and all
-                              # units for these iterations were executed.
         self._is_failed = False # was an exception raised or not
 
         self.last = False
-        self.outputs = dict()
+        self.outputs = {}
         self.results = OrderedDict()
 
         self.has_dump = False # does unit has any dump actions or not
@@ -422,11 +417,7 @@ class Experiment:
             src = name
             name = src.__name__
 
-        if src is None:
-            kwargs[mode] = parse_name(name)
-        else:
-            kwargs[mode] = src
-
+        kwargs[mode] = parse_name(name) if src is None else src
         name = self.add_postfix(name)
         self.actions[name] = ExecutableUnit(name=name, args=args, when=when, save_to=save_to, **kwargs)
         if dump is not None:
@@ -554,9 +545,8 @@ class Experiment:
             self.add_generator(f'{name}_root', generator=root, config=EC(full=True), when=when, **kwargs)
             self.add_callable(f'{name}', func=branch, config=EC(full=True), batch=O(f'{name}_root')[0], save_to=save_to,
                               when=when, **kwargs)
-        if variables is not None:
-            if dump is not None:
-                self.dump(variables, dump)
+        if variables is not None and dump is not None:
+            self.dump(variables, dump)
         return self
 
     def add_namespace(self, namespace):
@@ -641,10 +631,7 @@ class Experiment:
     @property
     def only_callables(self):
         """ Check if experiment has only callables. """
-        for unit in self.actions.values():
-            if unit.callable is None:
-                return False
-        return True
+        return all(unit.callable is not None for unit in self.actions.values())
 
     def copy(self):
         """ Create copy of the experiment. Is needed to create experiments for branches. """
@@ -765,8 +752,11 @@ class Experiment:
 
     def create_stream(self, name, *streams):
         """ Create contextmanager to redirect stdout/stderr. """
-        streams = [stream for stream in streams if not isinstance(stream, contextlib.nullcontext)]
-        if len(streams) > 0:
+        if streams := [
+            stream
+            for stream in streams
+            if not isinstance(stream, contextlib.nullcontext)
+        ]:
             if name == 'stdout':
                 return contextlib.redirect_stdout(MultiOut(*streams))
             return contextlib.redirect_stderr(MultiOut(*streams)) # 'stderr'
@@ -825,7 +815,7 @@ class Experiment:
         if len(self.instance_creators) > 0:
             repr += "instances:\n"
             for name, creator in self.instance_creators.items():
-                repr += spacing + f"{name}(\n"
+                repr += f"{spacing}{name}(\n"
                 repr += 2 * spacing + f"root={creator.root},\n"
                 repr += ''.join([spacing * 2 + f"{key}={value}\n" for key, value in creator.kwargs.items()])
                 repr += spacing + ")\n"
@@ -835,7 +825,7 @@ class Experiment:
             repr += "units:\n"
             attrs = ['callable', 'generator', 'root', 'when', 'args']
             for name, action in self.actions.items():
-                repr += spacing + f"{name}(\n"
+                repr += f"{spacing}{name}(\n"
                 repr += ''.join([spacing * 2 + f"{key}={getattr(action, key)}\n" for key in attrs])
                 kwargs = {**action.kwargs, **action.other_kwargs}
                 repr += spacing * 2 + f"kwargs={kwargs}\n" + spacing + ")\n"
@@ -882,17 +872,14 @@ class Executor:
     def __init__(self, experiment, research=None, worker=None, configs=None, executor_config=None,
                  branches_configs=None, target='threads', n_iters=None, task_name=None, **kwargs):
         if configs is None:
-            if branches_configs is None:
-                self.n_branches = 1
-            else:
-                self.n_branches = len(branches_configs)
-        else:
-            if branches_configs is not None and len(configs) != len(branches_configs):
-                raise ValueError('`configs` and `branches_configs` must be of the same length.')
+            self.n_branches = 1 if branches_configs is None else len(branches_configs)
+        elif branches_configs is None or len(configs) == len(branches_configs):
             self.n_branches = len(configs)
 
+        else:
+            raise ValueError('`configs` and `branches_configs` must be of the same length.')
         self.configs = configs or [Config() for _ in range(self.n_branches)]
-        self.executor_config = Config(executor_config or dict())
+        self.executor_config = Config(executor_config or {})
         self.branches_configs = branches_configs or [Config() for _ in range(self.n_branches)]
         self.branches_configs = [Config(config) for config in self.branches_configs]
         self.n_iters = n_iters
@@ -906,11 +893,7 @@ class Executor:
         self.kwargs = kwargs
 
         self.worker = worker
-        if worker is not None:
-            seed = spawn_seed_sequence(worker)
-        else:
-            seed = make_seed_sequence()
-
+        seed = make_seed_sequence() if worker is None else spawn_seed_sequence(worker)
         self.random_seed = seed
         self.random = make_rng(seed)
 
@@ -940,7 +923,7 @@ class Executor:
         self.common_stdout = create_output_stream(dump_results, redirect_stdout, 'stdout.txt', path, common=True)
         self.common_stderr = create_output_stream(dump_results, redirect_stderr, 'stderr.txt', path, common=True)
 
-        with self.common_stdout, self.common_stderr:
+        with (self.common_stdout, self.common_stderr):
             self.pid = os.getpid() if self.research and self.research.parallel else None
 
             iterations = range(self.n_iters) if self.n_iters else itertools.count()
@@ -954,7 +937,7 @@ class Executor:
                         self.call_root(iteration, unit_name)
                     else:
                         self.parallel_call(iteration, unit_name, target=self.target, debug=self.debug) #pylint:disable=unexpected-keyword-arg
-                if not any([experiment.is_alive for experiment in self.experiments]):
+                if not any(experiment.is_alive for experiment in self.experiments):
                     break
                 if self.research:
                     for experiment in self.experiments:
@@ -1012,9 +995,7 @@ class Executor:
     @property
     def profile_info(self):
         """ Profile info. """
-        if self._profiler:
-            return self._profiler.profile_info
-        return None
+        return self._profiler.profile_info if self._profiler else None
 
     def show_profile_info(self, **kwargs):
         return self._profiler.show_profile_info(**kwargs)

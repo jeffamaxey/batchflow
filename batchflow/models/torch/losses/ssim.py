@@ -45,8 +45,9 @@ class SSIM(nn.Module):
         kernel_1d = (kernel_1d / kernel_1d.sum()).unsqueeze(1)
 
         kernel_2d = kernel_1d.mm(kernel_1d.t()).float().unsqueeze(0).unsqueeze(0)
-        kernel = kernel_2d.expand(channel, 1, self.kernel_size, self.kernel_size).contiguous()
-        return kernel
+        return kernel_2d.expand(
+            channel, 1, self.kernel_size, self.kernel_size
+        ).contiguous()
 
     def compute_ssim(self, prediction, target, return_sigma=False):
         """ Compute structural similarity map. """
@@ -67,9 +68,7 @@ class SSIM(nn.Module):
         sigma_map = (2*sigma12 + 0.0009) / (sigma1_sq + sigma2_sq + 0.0009)
         ssim_map = mu_map * sigma_map
 
-        if return_sigma:
-            return ssim_map, sigma_map
-        return ssim_map
+        return (ssim_map, sigma_map) if return_sigma else ssim_map
 
 
 class MSSIM(SSIM):

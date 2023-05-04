@@ -21,17 +21,13 @@ class E(NamedExpression):
 
     def _get(self, **kwargs):
         experiment = kwargs['experiment']
-        if self.all:
-            return experiment.executor.experiments
-        return [experiment]
+        return experiment.executor.experiments if self.all else [experiment]
 
     def get(self, **kwargs):
         """ Return a value. """
         experiments = self._get(**kwargs)
         results = self._transform(experiments)
-        if self.all:
-            return results
-        return results[0]
+        return results if self.all else results[0]
 
     def _transform(self, experiments):
         if self.unit is not None:

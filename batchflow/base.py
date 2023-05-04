@@ -32,14 +32,10 @@ class Baseset:
     @property
     def indices(self):
         """:class:`numpy.ndarray` : an array with the indices """
-        if isinstance(self.index, Baseset):
-            return self.index.indices
-        return self.index
+        return self.index.indices if isinstance(self.index, Baseset) else self.index
 
     def __len__(self):
-        if self.indices is None:
-            return 0
-        return len(self.indices)
+        return 0 if self.indices is None else len(self.indices)
 
     @property
     def size(self):
@@ -180,15 +176,13 @@ class Baseset:
         iter_params = kwargs.pop('iter_params', None)
         for ix_batch in self.index.gen_batch(batch_size, shuffle, n_iters, n_epochs, drop_last,
                                              notifier, iter_params):
-            batch = self.create_batch(ix_batch, *args, **kwargs)
-            yield batch
+            yield self.create_batch(ix_batch, *args, **kwargs)
 
     def next_batch(self, batch_size, shuffle=False, n_iters=None, n_epochs=None, drop_last=False,
                    iter_params=None, *args, **kwargs):
         """ Return a batch """
         batch_index = self.index.next_batch(batch_size, shuffle, n_iters, n_epochs, drop_last, iter_params)
-        batch = self.create_batch(batch_index, *args, **kwargs)
-        return batch
+        return self.create_batch(batch_index, *args, **kwargs)
 
     def create_batch(self, batch_indices, pos=True, **kwargs):
         """ Create batch with indices given """

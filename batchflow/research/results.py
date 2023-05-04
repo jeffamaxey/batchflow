@@ -26,7 +26,7 @@ class ResearchResults:
         self._manager = mp.Manager()
         self.results = self._manager.dict()
         self.configs = self._manager.dict()
-        self.artifacts = dict()
+        self.artifacts = {}
 
         self.kwargs = kwargs
 
@@ -75,21 +75,22 @@ class ResearchResults:
             is used as `config`. If `config` is not defined but `alias` is, then will be concated to `alias`.
         """
         experiment_id, name, iterations = self.filter(experiment_id, name, iterations, config, alias, domain, **kwargs)
-        results = dict()
+        results = {}
         for path in glob.glob(os.path.join(self.name, 'experiments', '*', 'results', '*')):
             path = os.path.normpath(path)
             _experiment_id, _, _name = path.split(os.sep)[-3:]
-            if experiment_id is None or _experiment_id in experiment_id:
-                if name is None or _name in name:
-                    if _experiment_id not in results:
-                        results[_experiment_id] = OrderedDict()
-                    experiment_results = results[_experiment_id]
+            if (experiment_id is None or _experiment_id in experiment_id) and (
+                name is None or _name in name
+            ):
+                if _experiment_id not in results:
+                    results[_experiment_id] = OrderedDict()
+                experiment_results = results[_experiment_id]
 
-                    if _name not in experiment_results:
-                        experiment_results[_name] = OrderedDict()
-                    name_results = experiment_results[_name]
-                    new_values = self.load_iteration_files(path, iterations)
-                    experiment_results[_name] = OrderedDict([*name_results.items(), *new_values.items()])
+                if _name not in experiment_results:
+                    experiment_results[_name] = OrderedDict()
+                name_results = experiment_results[_name]
+                new_values = self.load_iteration_files(path, iterations)
+                experiment_results[_name] = OrderedDict([*name_results.items(), *new_values.items()])
         self.results = mp.Manager().dict(**results)
 
     def load_artifacts(self, experiment_id=None, name=None, config=None, alias=None, domain=None, **kwargs):
@@ -111,7 +112,7 @@ class ResearchResults:
         kwargs : dict
             is used as `config`. If `config` is not defined but `alias` is, then will be concated to `alias`.
         """
-        self.artifacts = dict()
+        self.artifacts = {}
         names = to_list('*' if name is None else name)
         experiment_id, _, _ = self.filter(experiment_id, None, None, config, alias, domain, **kwargs)
         for _name in names:
@@ -236,7 +237,7 @@ class ResearchResults:
             files_to_load = {int(os.path.basename(filename)): filename for filename in filenames}
         else:
             dumped_iteration = np.sort(np.array([int(os.path.basename(filename)) for filename in filenames]))
-            files_to_load = dict()
+            files_to_load = {}
             for iteration in iterations:
                 _it = dumped_iteration[np.argwhere(dumped_iteration >= iteration)[0, 0]]
                 files_to_load[_it] = os.path.join(path, str(_it))
@@ -363,7 +364,7 @@ class ResearchResults:
                 filtered_ids += self.filter_ids_by_configs(config=_config.config())
             return filtered_ids
 
-        if len(kwargs) > 0:
+        if kwargs:
             if config is not None:
                 config = {**config, **kwargs}
             elif alias is not None:

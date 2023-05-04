@@ -4,12 +4,15 @@ and define data processing and machine learning workflows even for datasets that
 
 Documentation - https://analysiscenter.github.io/batchflow/
 """
+
 import re
 from setuptools import setup, find_packages
 
 
 with open('batchflow/__init__.py', 'r') as f:
-    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
+    version = re.search(
+        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE
+    )[1]
 
 
 with open('README.md', 'r') as f:

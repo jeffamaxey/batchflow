@@ -33,18 +33,19 @@ def pipeline():
         A pipeline that contains model initialization and training with a given config.
     """
 
-    test_pipeline = (Pipeline()
-                     .init_variable('current_loss')
-                     .init_model('model', C('model_class'),
-                                 'dynamic', C('model_config'))
-                     .to_array(dtype='float32')
-                     .train_model('model',
-                                  inputs=B('images'),
-                                  targets=B('labels'),
-                                  outputs='loss',
-                                  save_to=V('current_loss'))
-                     )
-    return test_pipeline
+    return (
+        Pipeline()
+        .init_variable('current_loss')
+        .init_model('model', C('model_class'), 'dynamic', C('model_config'))
+        .to_array(dtype='float32')
+        .train_model(
+            'model',
+            inputs=B('images'),
+            targets=B('labels'),
+            outputs='loss',
+            save_to=V('current_loss'),
+        )
+    )
 
 
 @pytest.mark.slow

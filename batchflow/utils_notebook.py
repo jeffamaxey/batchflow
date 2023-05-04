@@ -14,11 +14,7 @@ def in_notebook():
     """ Return True if in Jupyter notebook and False otherwise. """
     try:
         shell = get_ipython().__class__.__name__
-        if shell == 'ZMQInteractiveShell':
-            return True
-        if shell == 'TerminalInteractiveShell':
-            return False
-        return False
+        return shell == 'ZMQInteractiveShell'
     except NameError:
         return False
 
@@ -35,7 +31,9 @@ def get_notebook_path():
     import ipykernel
 
     # Id of the current running kernel: a string uid
-    kernel_id = re.search('kernel-(.*).json', ipykernel.connect.get_connection_file()).group(1)
+    kernel_id = re.search(
+        'kernel-(.*).json', ipykernel.connect.get_connection_file()
+    )[1]
 
     # Get running servers for both JupyterLab v2.# and v3.#
     from notebook.notebookapp import list_running_servers as list_running_servers_v2
@@ -59,10 +57,11 @@ def get_notebook_name():
 
     If run outside Jupyter notebook, returns None.
     """
-    if not in_notebook():
-        return None
-
-    return os.path.splitext(get_notebook_path())[0].split('/')[-1]
+    return (
+        os.path.splitext(get_notebook_path())[0].split('/')[-1]
+        if in_notebook()
+        else None
+    )
 
 
 def pylint_notebook(path=None, options='', printer=print, ignore_comments=True, ignore_codes=tuple(),
@@ -102,7 +101,7 @@ def pylint_notebook(path=None, options='', printer=print, ignore_comments=True, 
 
     # Parse parameters
     path = path or get_notebook_path()
-    options = options if options.startswith(' ') else ' ' + options
+    options = options if options.startswith(' ') else f' {options}'
     ignore_codes = set(ignore_codes)
     ignore_codes.update({'import-error', 'wrong-import-position', 'invalid-name',
                          'unnecessary-semicolon', 'trailing-whitespace', 'trailing-newlines'})
@@ -133,11 +132,7 @@ def pylint_notebook(path=None, options='', printer=print, ignore_comments=True, 
     for line in code.split('\n'):
         # Line magics: remove autoreload
         if line.startswith('get_ipython().run_line_magic'):
-            if 'autoreload' in line:
-                line = ''
-            else:
-                line = line[line.find(',')+3:-2]
-
+            line = '' if 'autoreload' in line else line[line.find(',')+3:-2]
         # Cell magics: contain multiple lines
         if line.startswith('get_ipython().run_cell_magic'):
             line = line[line.find(',')+1:]
@@ -161,7 +156,7 @@ def pylint_notebook(path=None, options='', printer=print, ignore_comments=True, 
     code = '\n'.join(code_list)
 
     # Create temporal file with code, run pylint on it
-    temp_name = os.path.splitext(path)[0] + '.py'
+    temp_name = f'{os.path.splitext(path)[0]}.py'
     with open(temp_name, 'w') as temp_file:
         temp_file.write(code)
 
@@ -210,9 +205,7 @@ def pylint_notebook(path=None, options='', printer=print, ignore_comments=True, 
     if not keep_script:
         os.remove(temp_name)
 
-    if return_report:
-        return '\n'.join(report_)
-    return 0
+    return '\n'.join(report_) if return_report else 0
 
 
 def get_available_gpus(n=1, min_free_memory=0.9, max_processes=2, verbose=False, raise_error=False):
@@ -307,7 +300,7 @@ def set_gpus(n=1, min_free_memory=0.9, max_processes=2, verbose=False, raise_err
     raise_error : bool
         Whether to raise an exception if not enough devices are available.
     """
-    if 'CUDA_VISIBLE_DEVICES' in os.environ.keys():
+    if 'CUDA_VISIBLE_DEVICES' in os.environ:
         str_devices = os.environ["CUDA_VISIBLE_DEVICES"]
         warnings.warn(f'`CUDA_VISIBLE_DEVICES` is already set to "{str_devices}"!')
         return [int(d) for d in str_devices.split(',')]

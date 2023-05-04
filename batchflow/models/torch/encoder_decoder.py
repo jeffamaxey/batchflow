@@ -29,9 +29,7 @@ class EncoderModule(nn.ModuleDict):
                 outputs.append(x)
         outputs.append(x)
 
-        if self.return_all:
-            return outputs
-        return outputs[-1]
+        return outputs if self.return_all else outputs[-1]
 
 
     def _make_modules(self, inputs, **kwargs):
@@ -50,21 +48,22 @@ class EncoderModule(nn.ModuleDict):
 
                     layer = ConvBlock(inputs=inputs, **args)
                     inputs = layer(inputs)
-                    layer_desc = 'block-{}'.format(i)
+                    layer_desc = f'block-{i}'
 
                 elif letter in ['d', 'p']:
                     args = {**kwargs, **downsample_args, **unpack_args(downsample_args, i, num_stages)}
 
                     layer = ConvBlock(inputs=inputs, **args)
                     inputs = layer(inputs)
-                    layer_desc = 'downsample-{}'.format(i)
+                    layer_desc = f'downsample-{i}'
 
                 elif letter in ['s']:
                     layer = nn.Identity()
-                    layer_desc = 'skip-{}'.format(i)
+                    layer_desc = f'skip-{i}'
                 else:
-                    raise ValueError('Unknown letter in order {}, use one of "b", "d", "p", "s"'
-                                     .format(letter))
+                    raise ValueError(
+                        f'Unknown letter in order {letter}, use one of "b", "d", "p", "s"'
+                    )
 
                 self.update([(layer_desc, layer)])
                 self.layout += letter
@@ -119,7 +118,9 @@ class DecoderModule(nn.ModuleDict):
             factor = int(factor ** (1/num_stages))
             factor = [factor] * num_stages
         elif not isinstance(factor, list):
-            raise TypeError('factor should be int or list of int, but %s was given' % type(factor))
+            raise TypeError(
+                f'factor should be int or list of int, but {type(factor)} was given'
+            )
 
         block_args = kwargs.pop('blocks')
         upsample_args = kwargs.pop('upsample')
@@ -134,7 +135,7 @@ class DecoderModule(nn.ModuleDict):
 
                     layer = ConvBlock(inputs=x, **args)
                     x = layer(x)
-                    layer_desc = 'block-{}'.format(i)
+                    layer_desc = f'block-{i}'
 
                 elif letter in ['u']:
                     args = {'factor': factor[i],
@@ -142,21 +143,22 @@ class DecoderModule(nn.ModuleDict):
 
                     layer = Upsample(inputs=x, **args)
                     x = layer(x)
-                    layer_desc = 'upsample-{}'.format(i)
+                    layer_desc = f'upsample-{i}'
 
                 elif letter in ['c']:
-                    if self.skip:
-                        if i < len(inputs) - 2:
-                            args = {'factor': factor[i],
-                                    **kwargs, **combine_args, **unpack_args(combine_args, i, num_stages)}
-
-                            layer = Combine(inputs=[x, inputs[-i - 3]], **args)
-                            x = layer([x, inputs[-i - 3]])
-                            layer_desc = 'combine-{}'.format(i)
-                    else:
+                    if not self.skip:
                         continue
+                    if i < len(inputs) - 2:
+                        args = {'factor': factor[i],
+                                **kwargs, **combine_args, **unpack_args(combine_args, i, num_stages)}
+
+                        layer = Combine(inputs=[x, inputs[-i - 3]], **args)
+                        x = layer([x, inputs[-i - 3]])
+                        layer_desc = f'combine-{i}'
                 else:
-                    raise ValueError('Unknown letter in order {}, use one of ("b", "u", "c")'.format(letter))
+                    raise ValueError(
+                        f'Unknown letter in order {letter}, use one of ("b", "u", "c")'
+                    )
 
                 self.update([(layer_desc, layer)])
                 self.layout += letter
@@ -289,10 +291,9 @@ class Decoder(TorchModel):
             inputs = layer(inputs)
             layers.append(layer)
 
-        if classes:
-            if get_shape(inputs)[1] != classes:
-                layer = ConvBlock(inputs=inputs, layout='c', filters=classes, kernel_size=1)
-                layers.append(layer)
+        if classes and get_shape(inputs)[1] != classes:
+            layer = ConvBlock(inputs=inputs, layout='c', filters=classes, kernel_size=1)
+            layers.append(layer)
         return nn.Sequential(*layers)
 
 
@@ -438,11 +439,9 @@ class EncoderDecoder(Decoder):
         embedding = kwargs.pop('embedding')
         decoder = kwargs.pop('decoder')
 
-        layers = []
         encoder = cls.encoder(inputs=inputs, **{**kwargs, **encoder})
         encoder_outputs = encoder(inputs)
-        layers.append(('encoder', encoder))
-
+        layers = [('encoder', encoder)]
         if embedding is not None:
             embedding = cls.embedding(inputs=encoder_outputs, **{**kwargs, **embedding})
         else:

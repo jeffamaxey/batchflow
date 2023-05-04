@@ -22,9 +22,9 @@ class BCE(nn.Module):
 
     def forward(self, prediction, target):
         pos_weight = self.pos_weight * torch.ones(1, device=prediction.device)
-        loss = F.binary_cross_entropy_with_logits(prediction, target, pos_weight=pos_weight,
-                                                  reduction=self.reduction)
-        return loss
+        return F.binary_cross_entropy_with_logits(
+            prediction, target, pos_weight=pos_weight, reduction=self.reduction
+        )
 
 
 class TopK(nn.Module):

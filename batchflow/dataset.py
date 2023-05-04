@@ -102,17 +102,15 @@ class Dataset(Baseset):
         if self.batch_class.components is not None and self._data_named is None:
             self._data_named = create_item_class(self.batch_class.components, source=self.preloaded,
                                                  cast_to_array=self.cast_to_array)
-        if self._data_named is not None:
-            return self._data_named
-        return self.preloaded
+        return self._data_named if self._data_named is not None else self.preloaded
 
     def __getattr__(self, name):
         if name[:2] == 'cv' and name[2:].isdigit():
             raise AttributeError("To access cross-validation call cv_split() first.")
         if 'batch_class' in dir(self) and \
-           self.batch_class.components is not None and name in self.batch_class.components:
+               self.batch_class.components is not None and name in self.batch_class.components:
             return getattr(self.data, name)
-        raise AttributeError("%s not found in class %s" % (name, self.__class__.__name__))
+        raise AttributeError(f"{name} not found in class {self.__class__.__name__}")
 
     @classmethod
     def from_dataset(cls, dataset, index, batch_class=None, copy=False, **kwargs):
@@ -137,9 +135,12 @@ class Dataset(Baseset):
             -------
             Dataset
         """
-        if (batch_class is None or (batch_class == dataset.batch_class)) and cls._is_same_index(index, dataset.index):
-            if not copy:
-                return dataset
+        if (
+            (batch_class is None or (batch_class == dataset.batch_class))
+            and cls._is_same_index(index, dataset.index)
+            and not copy
+        ):
+            return dataset
         if copy:
             index = cp.copy(index)
         bcl = batch_class if batch_class is not None else dataset.batch_class
@@ -273,14 +274,16 @@ class Dataset(Baseset):
                 If the type of other is not a Pipeline
         """
         if not isinstance(other, Pipeline):
-            raise TypeError("Pipeline is expected, but got %s. Use as dataset >> pipeline" % type(other))
+            raise TypeError(
+                f"Pipeline is expected, but got {type(other)}. Use as dataset >> pipeline"
+            )
         return other << self
 
     def cv(self, n):
         """ Return a dataset which corresponds to n-th CV split """
         if n > self.n_splits - 1:
             raise ValueError("The dataset has been split into fewer splits than %d" % n)
-        return  getattr(self, 'cv' + str(n))
+        return getattr(self, f'cv{str(n)}')
 
     def CV(self, expr):
         """ Return a dataset which corresponds to the fold defined as NamedExpression """
@@ -324,7 +327,7 @@ class Dataset(Baseset):
         # pylint: disable=access-member-before-definition
         if self.n_splits is not None:
             for i in range(self.n_splits):
-                cv_attr = 'cv'+str(i)
+                cv_attr = f'cv{str(i)}'
                 delattr(self, cv_attr)
                 if self.train is not None:
                     delattr(self.train, cv_attr)
@@ -351,12 +354,12 @@ class Dataset(Baseset):
             train_splits = list(set(range(n_splits)) - {i})
             train_indices = np.concatenate(np.asarray(splits)[train_splits])
 
-            setattr(self, 'cv'+str(i), self.copy())
-            cv_dataset = getattr(self, 'cv'+str(i))
+            setattr(self, f'cv{str(i)}', self.copy())
+            cv_dataset = getattr(self, f'cv{str(i)}')
             cv_dataset.train = self.create_subset(train_indices)
             cv_dataset.test = self.create_subset(test_indices)
-            setattr(self.train, 'cv'+str(i), cv_dataset.train)
-            setattr(self.test, 'cv'+str(i), cv_dataset.test)
+            setattr(self.train, f'cv{str(i)}', cv_dataset.train)
+            setattr(self.test, f'cv{str(i)}', cv_dataset.test)
 
     def _split_kfold(self, n_splits, order):
         split_sizes = np.full(n_splits, len(order) // n_splits, dtype=np.int)

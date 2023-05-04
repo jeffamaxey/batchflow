@@ -78,7 +78,7 @@ def run_notebook(path, inputs=None, outputs=None, inputs_pos=1, out_path_db=None
         # Set `out_path_db` value
         if out_path_db is None:
             if out_path_ipynb:
-                out_path_db = os.path.splitext(out_path_ipynb)[0] + '_db'
+                out_path_db = f'{os.path.splitext(out_path_ipynb)[0]}_db'
             else:
                 error_message = """\
                                 Invalid value for `out_path_db` argument. If `inputs` or `outputs` are provided,
@@ -157,7 +157,7 @@ def run_notebook(path, inputs=None, outputs=None, inputs_pos=1, out_path_db=None
                     notebook_db['outputs'] = output"""
 
         code = dedent(code)
-        code = comment_header + (code_header if not inputs else "") + code
+        code = comment_header + ("" if inputs else code_header) + code
 
         output_cell = nbformat.v4.new_code_cell(code)
         notebook['cells'].append(output_cell)
@@ -208,7 +208,7 @@ def run_notebook(path, inputs=None, outputs=None, inputs_pos=1, out_path_db=None
         # Remove shelve files if the notebook is successfully executed
         if out_path_db and not failed:
             for ext in ['bak', 'dat', 'dir']:
-                os.remove(out_path_db + '.' + ext)
+                os.remove(f'{out_path_db}.{ext}')
 
         if return_notebook:
             exec_res['notebook'] = notebook
@@ -264,9 +264,7 @@ def extract_traceback(notebook):
         outputs = cell.get('outputs', [])
 
         for output in outputs:
-            traceback = output.get('traceback', [])
-
-            if traceback:
+            if traceback := output.get('traceback', []):
                 traceback = '\n'.join(traceback)
                 return True, cell['execution_count'], traceback
 

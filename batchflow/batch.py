@@ -51,9 +51,9 @@ class MethodsTransformingMeta(type):
             if transform_kwargs is not None:
                 namespace_[object_name] = cls.use_apply_parallel(object_, **transform_kwargs)
 
-                disclaimer = "This is an untransformed version of `{}`.\n\n".format(object_.__qualname__)
+                disclaimer = f"This is an untransformed version of `{object_.__qualname__}`.\n\n"
                 object_.__doc__ = disclaimer + (object_.__doc__ or '')
-                object_.__name__ = '_' + object_name + '_'
+                object_.__name__ = f'_{object_name}_'
                 object_.__qualname__ = '.'.join(object_.__qualname__.split('.')[:-1] + [object_.__name__])
                 namespace_[object_.__name__] = object_
 
@@ -141,9 +141,7 @@ class Batch(metaclass=MethodsTransformingMeta):
     @property
     def dataset(self):
         """: Dataset - a dataset the batch has been taken from """
-        if self.pipeline is not None:
-            return self.pipeline.dataset
-        return self._dataset
+        return self.pipeline.dataset if self.pipeline is not None else self._dataset
 
     @property
     def pipeline(self):
@@ -200,8 +198,7 @@ class Batch(metaclass=MethodsTransformingMeta):
 
     def __copy__(self):
         dump_batch = dill.dumps(self)
-        restored_batch = dill.loads(dump_batch)
-        return restored_batch
+        return dill.loads(dump_batch)
 
     def deepcopy(self):
         """ Return a deep copy of the batch. """
@@ -274,8 +271,8 @@ class Batch(metaclass=MethodsTransformingMeta):
             components = batches[0].components or (None,)
         elif isinstance(components, str):
             components = (components, )
-        new_data = list(None for _ in components)
-        rest_data = list(None for _ in components)
+        new_data = [None for _ in components]
+        rest_data = [None for _ in components]
 
         for i, comp in enumerate(components):
             none_components_in_batches = [b.get(component=comp) is None for b in batches]
@@ -289,13 +286,13 @@ class Batch(metaclass=MethodsTransformingMeta):
             else:
                 last_batch = batches[break_point]
                 new_comp = [b.get(component=comp) for b in batches[:break_point]] + \
-                           [last_batch.get(component=comp)[:last_batch_len]]
+                               [last_batch.get(component=comp)[:last_batch_len]]
 
             new_data[i] = cls.merge_component(comp, new_comp)
 
             if batch_size is not None:
                 rest_comp = [last_batch.get(component=comp)[last_batch_len:]] + \
-                            [b.get(component=comp) for b in batches[break_point + 1:]]
+                                [b.get(component=comp) for b in batches[break_point + 1:]]
                 rest_data[i] = cls.merge_component(comp, rest_comp)
 
         new_batch = _make_batch(new_data)
@@ -373,23 +370,19 @@ class Batch(metaclass=MethodsTransformingMeta):
             init = (init,)
         elif isinstance(components, (tuple, list)):
             components = tuple(components)
-            if init is None:
-                init = (None,) * len(components)
-            else:
-                init = tuple(init)
-
+            init = (None,) * len(components) if init is None else tuple(init)
         for comp, value in zip(components, init):
             if hasattr(self, comp):
-                raise ValueError("An attribute '%s' already exists" % comp)
+                raise ValueError(f"An attribute '{comp}' already exists")
             if self.components is not None and comp in self.components:
-                raise ValueError("A components '%s' already exists" % comp)
+                raise ValueError(f"A components '{comp}' already exists")
 
             if self.components is None:
-                self.components = tuple([comp])
+                self.components = (comp, )
                 if self._data is not None:
                     warnings.warn("All batch data is erased")
             else:
-                self.components = self.components + tuple([comp])
+                self.components = self.components + (comp, )
             setattr(self, comp, value)
 
         return self
@@ -397,7 +390,7 @@ class Batch(metaclass=MethodsTransformingMeta):
     def __getattr__(self, name):
         if self.components is not None and name in self.components:   # pylint: disable=unsupported-membership-test
             return getattr(self.data, name, None)
-        raise AttributeError("%s not found in class %s" % (name, self.__class__.__name__))
+        raise AttributeError(f"{name} not found in class {self.__class__.__name__}")
 
     def __setattr__(self, name, value):
         if self.components is not None:
@@ -442,16 +435,9 @@ class Batch(metaclass=MethodsTransformingMeta):
     def get(self, item=None, component=None):
         """ Return an item from the batch or the component """
         if item is None:
-            if component is None:
-                res = self.data
-            else:
-                res = getattr(self, component)
+            return self.data if component is None else getattr(self, component)
         else:
-            if component is None:
-                res = self[item]
-            else:
-                res = getattr(self[item], component)
-        return res
+            return self[item] if component is None else getattr(self[item], component)
 
     def __getitem__(self, item):
         return self.data[item] if self.data is not None else None
@@ -475,7 +461,7 @@ class Batch(metaclass=MethodsTransformingMeta):
     def get_errors(self, all_res):
         """ Return a list of errors from a parallel action """
         all_errors = [error for error in all_res if isinstance(error, Exception)]
-        return all_errors if len(all_errors) > 0 else None
+        return all_errors if all_errors else None
 
     @action
     def do_nothing(self, *args, **kwargs):
@@ -557,9 +543,9 @@ class Batch(metaclass=MethodsTransformingMeta):
         src = kwargs.pop('src', None)
         dst = kwargs.pop('dst', None)
 
-        if isinstance(src, list) and not (dst is None or isinstance(dst, list) and len(src) == len(dst)):
-            raise ValueError("src and dst must have equal length")
-        if isinstance(src, list) and (dst is None or isinstance(dst, list) and len(src) == len(dst)):
+        if isinstance(src, list):
+            if not (dst is None or isinstance(dst, list) and len(src) == len(dst)):
+                raise ValueError("src and dst must have equal length")
             if dst is None:
                 dst = src
 
@@ -572,7 +558,7 @@ class Batch(metaclass=MethodsTransformingMeta):
         if isinstance(src, str):
             init = self.get(component=src)
         elif isinstance(src, (tuple, list)):
-            init = list((x,) for x in zip(*[self.get(component=s) for s in src]))
+            init = [(x, ) for x in zip(*[self.get(component=s) for s in src])]
         else:
             init = src
 
@@ -601,9 +587,7 @@ class Batch(metaclass=MethodsTransformingMeta):
         args, kwargs
             other parameters passed to ``func``
         """
-        if p is None or p == 1:
-            return func(item, *args, **kwargs)
-        return item
+        return func(item, *args, **kwargs) if p is None or p == 1 else item
 
     def _get_file_name(self, ix, src):
         """ Get full path file name corresponding to the current index.
@@ -665,7 +649,7 @@ class Batch(metaclass=MethodsTransformingMeta):
             try:
                 file_name = src.get_fullpath(ix)
             except KeyError as e:
-                raise KeyError("File {} is not indexed in the received index".format(ix)) from e
+                raise KeyError(f"File {ix} is not indexed in the received index") from e
 
         elif src is None:
             file_name = self.index.get_fullpath(ix)
@@ -691,12 +675,11 @@ class Batch(metaclass=MethodsTransformingMeta):
             new_items = np.stack(result)
         except ValueError as e:
             message = str(e)
-            if "must have the same shape" in message:
-                new_items = np.empty(len(result), dtype=object)
-                new_items[:] = result
-            else:
+            if "must have the same shape" not in message:
                 raise e
 
+            new_items = np.empty(len(result), dtype=object)
+            new_items[:] = result
         if hasattr(self, component):
             setattr(self, component, new_items)
         else:
@@ -734,11 +717,7 @@ class Batch(metaclass=MethodsTransformingMeta):
         if not isinstance(dst, (list, tuple, np.ndarray)):
             dst = [dst]
 
-        if len(dst) == 1:
-            all_results = [all_results]
-        else:
-            all_results = list(zip(*all_results))
-
+        all_results = [all_results] if len(dst) == 1 else list(zip(*all_results))
         for component, result in zip(dst, all_results):
             self._assemble_component(result, component=component, **kwargs)
         return self
@@ -807,17 +786,22 @@ class Batch(metaclass=MethodsTransformingMeta):
         data_dict = {}
         for comp in components:
             comp_data = self.get(component=comp)
-            if isinstance(comp_data, pd.DataFrame):
-                data_dict.update(comp_data.to_dict('series'))
-            elif isinstance(comp_data, np.ndarray):
-                if comp_data.ndim > 1:
-                    columns = [comp + str(i) for i in range(comp_data.shape[1])]
-                    comp_dict = zip(columns, (comp_data[:, i] for i in range(comp_data.shape[1])))
-                    data_dict.update({comp: comp_dict})
-                else:
-                    data_dict.update({comp: comp_data})
+            if (
+                not isinstance(comp_data, pd.DataFrame)
+                and isinstance(comp_data, np.ndarray)
+                and comp_data.ndim > 1
+            ):
+                columns = [comp + str(i) for i in range(comp_data.shape[1])]
+                comp_dict = zip(columns, (comp_data[:, i] for i in range(comp_data.shape[1])))
+                data_dict[comp] = comp_dict
+            elif (
+                not isinstance(comp_data, pd.DataFrame)
+                and isinstance(comp_data, np.ndarray)
+                or not isinstance(comp_data, pd.DataFrame)
+            ):
+                data_dict[comp] = comp_data
             else:
-                data_dict.update({comp: comp_data})
+                data_dict |= comp_data.to_dict('series')
         _data = pd.DataFrame(data_dict)
 
         if fmt == 'feather':
@@ -827,7 +811,7 @@ class Batch(metaclass=MethodsTransformingMeta):
         elif fmt == 'csv':
             _data.to_csv(filename, *args, **kwargs)   # pylint:disable=no-member
         else:
-            raise ValueError('Unknown format %s' % fmt)
+            raise ValueError(f'Unknown format {fmt}')
 
         return self
 
@@ -908,7 +892,7 @@ class Batch(metaclass=MethodsTransformingMeta):
         elif fmt in ['csv', 'hdf5', 'feather']:
             self._load_table(src=src, fmt=fmt, dst=dst, **kwargs)
         else:
-            raise ValueError("Unknown format " + fmt)
+            raise ValueError(f"Unknown format {fmt}")
         return self
 
     @action
@@ -943,7 +927,7 @@ class Batch(metaclass=MethodsTransformingMeta):
         elif fmt in ['csv', 'hdf5', 'feather']:
             self._dump_table(dst, fmt, components, *args, **kwargs)
         else:
-            raise ValueError("Unknown format " + fmt)
+            raise ValueError(f"Unknown format {fmt}")
         return self
 
     @action
@@ -974,11 +958,8 @@ class Batch(metaclass=MethodsTransformingMeta):
                 comp = comp[np.newaxis, :, :]
             elif channels == 'last':
                 comp = comp[:, :, np.newaxis]
-        else:
-            # we assume that channels is 'last' by default
-            # so move channels from the last to the first axis if needed
-            if channels == 'first':
-                comp = np.moveaxis(comp, -1, 0)
+        elif channels == 'first':
+            comp = np.moveaxis(comp, -1, 0)
 
         if dtype is not None:
             comp = comp.astype(dtype)

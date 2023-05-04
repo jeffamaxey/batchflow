@@ -60,9 +60,9 @@ class BaseComponents:
         if self.components is not None:
             for comp in self.components:
                 d = getattr(self, comp, None)
-                s += '  ' + comp + ': ' + str(d) + '\n'
+                s += f'  {comp}: {str(d)}' + '\n'
         if self.indices is not None:
-            s += 'indices: ' + str(self.indices) + '\n'
+            s += f'indices: {str(self.indices)}' + '\n'
         #s += '  data: ' + str(self.data) +'\n'
         return s
 
@@ -109,18 +109,18 @@ class BaseComponents:
             return self._indices.index(item)
         if isinstance(self._indices, np.ndarray):
             return np.where(self._indices == item)[0][0]
-        raise TypeError("Unknown index type: %s" % type(self._indices))
+        raise TypeError(f"Unknown index type: {type(self._indices)}")
 
     def get_pos(self, component, indices):
         """ Return positions of given indices """
         items = indices
-        if self._indices is not None:
-            # a cropped numpy array needs a position as an index
-            if isinstance(self.data[component], np.ndarray):
-                if is_iterable(indices):
-                    items = [self.find_in_index(i) for i in indices]
-                else:
-                    items = self.find_in_index(indices)
+        if self._indices is not None and isinstance(
+            self.data[component], np.ndarray
+        ):
+            if is_iterable(indices):
+                items = [self.find_in_index(i) for i in indices]
+            else:
+                items = self.find_in_index(indices)
         return items
 
     def _get(self, component, indices=None, cropped=True):
@@ -167,9 +167,7 @@ class BaseComponents:
             self.data[component] = value
 
     def __getattr__(self, name):
-        if name in self.components:
-            return self.get(name, self.indices)
-        return None
+        return self.get(name, self.indices) if name in self.components else None
 
     def __setattr__(self, name, value):
         if name in ('data', 'components'):
@@ -222,6 +220,11 @@ def create_item_class(components, source=None, indices=None, crop=None, copy=Fal
             source = dict(zip(components, source))
         item_class = BaseComponents
 
-    item = item_class(components, source, indices=indices, crop=crop, copy=copy, cast_to_array=cast_to_array)
-
-    return item
+    return item_class(
+        components,
+        source,
+        indices=indices,
+        crop=crop,
+        copy=copy,
+        cast_to_array=cast_to_array,
+    )

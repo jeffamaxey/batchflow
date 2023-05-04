@@ -29,24 +29,22 @@ def make_rng(seed=None):
     numpy.random.Generator
     """
     if seed is False:
-        rng = None
+        return None
     elif seed is None or seed is True:
-        rng = np.random.default_rng(np.random.SFC64())
+        return np.random.default_rng(np.random.SFC64())
     elif isinstance(seed, np.random.SeedSequence):
-        rng = np.random.default_rng(np.random.SFC64(seed))
+        return np.random.default_rng(np.random.SFC64(seed))
     elif isinstance(seed, int):
-        rng = np.random.default_rng(np.random.SFC64(seed))
+        return np.random.default_rng(np.random.SFC64(seed))
     elif isinstance(seed, np.random.Generator):
-        rng = seed
+        return seed
     elif isinstance(seed, np.random.BitGenerator):
-        rng = np.random.default_rng(seed)
+        return np.random.default_rng(seed)
     elif isinstance(seed, np.random.RandomState):
-        rng = seed
+        return seed
     else:
-        warnings.warn("Unknown seed type: %s" %  seed)
-        rng = None
-
-    return rng
+        warnings.warn(f"Unknown seed type: {seed}")
+        return None
 
 
 def make_seed_sequence(shuffle=False):
@@ -96,6 +94,8 @@ def spawn_seed_sequence(source):
     elif isinstance(getattr(source, 'random_seed', None), np.random.SeedSequence):
         source = source.random_seed
     else:
-        raise ValueError('source should be SeedSequence, Batch or Pipeline, but given %s' % type(source))
+        raise ValueError(
+            f'source should be SeedSequence, Batch or Pipeline, but given {type(source)}'
+        )
 
     return source.spawn(1)[0]

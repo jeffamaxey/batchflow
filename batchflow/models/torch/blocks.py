@@ -20,7 +20,7 @@ class DefaultBlock(ConvBlock):
     def __init__(self, inputs=None, **kwargs):
         attrs = {name.lower(): value for name, value in vars(type(self)).items()
                  if name.isupper()}
-        kwargs = {**attrs, **kwargs}
+        kwargs = attrs | kwargs
 
         super().__init__(inputs=inputs, **kwargs)
 
@@ -134,7 +134,7 @@ class ResBlock(ConvBlock):
         if bottleneck:
             # Bottleneck: apply 1x1 conv before and after main flow computations to change number of filters
             bottleneck = 4 if bottleneck is True else bottleneck
-            layout = 'cna' + layout + 'acn'
+            layout = f'cna{layout}acn'
             kernel_size = [1] + kernel_size + [1]
             strides = [1] + strides + [1]
             strides_downsample = [1] + strides_downsample + [1]
@@ -150,7 +150,7 @@ class ResBlock(ConvBlock):
                              'kernel_size': 1, 'strides': branch_stride_downsample}
         else:
             branch_params = {}
-        layout = 'R' + layout + op
+        layout = f'R{layout}{op}'
 
         # Pass optional downsample parameters both to the main flow and to the side branch:
         # Only the first repetition is to be changed
@@ -292,12 +292,12 @@ class DenseBlock(ConvBlock):
 
         if bottleneck:
             bottleneck = 4 if bottleneck is True else bottleneck
-            layout = 'cna' + layout
+            layout = f'cna{layout}'
             kernel_size = [1, kernel_size]
             strides = [1, strides]
             filters = [growth_rate * bottleneck, filters]
 
-        layout = 'R' + layout + '|'
+        layout = f'R{layout}|'
         super().__init__(layout=layout, kernel_size=kernel_size, strides=strides, dropout_rate=dropout_rate,
                          filters=filters, n_repeats=num_layers, inputs=inputs, **kwargs)
 

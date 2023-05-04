@@ -26,14 +26,11 @@ class BinaryLovaszLoss(nn.Module):
         self.ignore = ignore
 
     def forward(self, prediction, target):
-        if self.per_image:
-            lst = [self.compute_loss(*self.flatten(logit.unsqueeze(0), label.unsqueeze(0)))
-                   for logit, label in zip(prediction, target)]
-            loss = torch.mean(torch.stack(lst), dim=0)
-
-        else:
-            loss = self.compute_loss(*self.flatten(prediction, target))
-        return loss
+        if not self.per_image:
+            return self.compute_loss(*self.flatten(prediction, target))
+        lst = [self.compute_loss(*self.flatten(logit.unsqueeze(0), label.unsqueeze(0)))
+               for logit, label in zip(prediction, target)]
+        return torch.mean(torch.stack(lst), dim=0)
 
     def flatten(self, scores, labels):
         """ Flatten predictions and true labels and remove ignored class. """
@@ -57,8 +54,7 @@ class BinaryLovaszLoss(nn.Module):
 
         gt_sorted = labels[perm.data]
         grad = lovasz_grad(gt_sorted)
-        loss = torch.dot(F.relu(errors_sorted), Variable(grad))
-        return loss
+        return torch.dot(F.relu(errors_sorted), Variable(grad))
 
 
 
@@ -81,14 +77,11 @@ class LovaszLoss(nn.Module):
         self.ignore_missing_classes = ignore_missing_classes
 
     def forward(self, prediction, target):
-        if self.per_image:
-            lst = [self.compute_loss(*self.flatten(logit.unsqueeze(0), label.unsqueeze(0)))
-                   for logit, label in zip(prediction, target)]
-            loss = torch.mean(torch.stack(lst), dim=0)
-
-        else:
-            loss = self.compute_loss(*self.flatten(prediction, target))
-        return loss
+        if not self.per_image:
+            return self.compute_loss(*self.flatten(prediction, target))
+        lst = [self.compute_loss(*self.flatten(logit.unsqueeze(0), label.unsqueeze(0)))
+               for logit, label in zip(prediction, target)]
+        return torch.mean(torch.stack(lst), dim=0)
 
     def flatten(self, probas, labels):
         """ Flatten predictions and true labels and remove ignored class. """
@@ -143,5 +136,5 @@ def lovasz_grad(gt_sorted):
 
     p = len(gt_sorted)
     if p > 1:  # cover 1-pixel case
-        jaccard[1:p] = jaccard[1:p] - jaccard[0:-1]
+        jaccard[1:p] = jaccard[1:p] - jaccard[:-1]
     return jaccard

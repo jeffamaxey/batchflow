@@ -136,5 +136,4 @@ class MNIST(ImagesOpenset):
                 raise ValueError('Invalid magic number %d in MNIST label file: %s' % (magic, f.name))
             num_items = self._read32(bytestream)
             buf = bytestream.read(num_items)
-            labels = np.frombuffer(buf, dtype=np.uint8)
-            return labels
+            return np.frombuffer(buf, dtype=np.uint8)

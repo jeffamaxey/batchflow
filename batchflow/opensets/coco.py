@@ -26,7 +26,11 @@ class BaseCOCO(ImagesOpenset):
 
     def _rgb_images_paths(self, path):
         """Find RGB images(avoid grayscale) in the folder and return their paths. """
-        return  [filename for filename in glob(path + '/*') if Image.open(filename).mode == 'RGB']
+        return [
+            filename
+            for filename in glob(f'{path}/*')
+            if Image.open(filename).mode == 'RGB'
+        ]
 
     @parallel(init='_get_from_urls', post='_post_fn', target='t')
     def download(self, url, content, train_val, path=None):
@@ -54,9 +58,7 @@ class BaseCOCO(ImagesOpenset):
         folder_to_extract = os.path.join(dirname(localname), content)
         #check that root folder from the archive already exists to avoid extracting, as its time consuming
         path_to_extracted = os.path.join(folder_to_extract, train_val)
-        if os.path.isdir(path_to_extracted):
-            pass
-        else:
+        if not os.path.isdir(path_to_extracted):
             # extracting
             with ZipFile(localname, 'r') as archive:
                 archive.extractall(folder_to_extract)
@@ -97,8 +99,8 @@ class COCOSegmentation(BaseCOCO):
             train_index = FilesIndex(path=self._rgb_images_paths(all_res[0]), no_ext=True)
             test_index = FilesIndex(path=self._rgb_images_paths(all_res[1]), no_ext=True)
         else:
-            train_index = FilesIndex(path=all_res[0] + '/*', no_ext=True)
-            test_index = FilesIndex(path=all_res[1] + '/*', no_ext=True)
+            train_index = FilesIndex(path=f'{all_res[0]}/*', no_ext=True)
+            test_index = FilesIndex(path=f'{all_res[1]}/*', no_ext=True)
         index = FilesIndex.concat(train_index, test_index)
 
         # store the paths to the folders with masks as attributes

@@ -28,8 +28,11 @@ class OncePipeline:
         return new_p
 
     def __getstate__(self):
-        state = dict(actions=self._actions, namespaces=self._namespaces, pipeline=self.pipeline)
-        return state
+        return dict(
+            actions=self._actions,
+            namespaces=self._namespaces,
+            pipeline=self.pipeline,
+        )
 
     def __setstate__(self, state):
         self._actions = state['actions']
@@ -55,7 +58,7 @@ class OncePipeline:
     def __getattr__(self, name):
         if self.pipeline.is_method_from_ns(name):
             return partial(self._add_action, name)
-        raise AttributeError("Unknown name: %s" % name)
+        raise AttributeError(f"Unknown name: {name}")
 
     def add_namespace(self, *namespaces):
         self.pipeline.add_namespace(*namespaces)
@@ -71,7 +74,7 @@ class OncePipeline:
         else:
             method = self.pipeline.get_method(action['name'])
             if method is None:
-                raise ValueError("Unknown method: %s" % action['name'])
+                raise ValueError(f"Unknown method: {action['name']}")
 
             res = method(*args_value, **kwargs_value)
 

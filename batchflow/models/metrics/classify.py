@@ -128,10 +128,7 @@ class ClassificationMetrics(Metrics):
         if targets.ndim == predictions.ndim:
             # targets and predictions contain the same info (labels, probabilities or logits)
             targets = self._to_labels(targets, fmt, axis, threshold)
-        elif targets.ndim == predictions.ndim - 1 and fmt != 'labels':
-            # targets contains labels while predictions is a one-hot array
-            pass
-        else:
+        elif targets.ndim != predictions.ndim - 1 or fmt == 'labels':
             raise ValueError("targets and predictions should have compatible shapes",
                              targets.shape, predictions.shape)
         predictions = self._to_labels(predictions, fmt, axis, threshold)
@@ -256,8 +253,7 @@ class ClassificationMetrics(Metrics):
 
     def _all_labels(self):
         first = 1 if self.skip_bg else 0
-        labels = list(range(first, self.num_classes))
-        return labels
+        return list(range(first, self.num_classes))
 
     def _count(self, f, label=None):
         if label is None:

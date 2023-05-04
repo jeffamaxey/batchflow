@@ -18,12 +18,24 @@ def pformat(object, indent=1, width=80, depth=None, *, compact=False, sort_dicts
     """ Backwards compatible version of pformat. """
     # pylint: disable=unexpected-keyword-arg
     _ = underscore_numbers
-    if sys.version_info.minor < 8:
-        result = _pformat(object=object, indent=indent, width=width, depth=depth, compact=compact)
-    else:
-        result = _pformat(object=object, indent=indent, width=width, depth=depth, compact=compact,
-                          sort_dicts=sort_dicts)
-    return result
+    return (
+        _pformat(
+            object=object,
+            indent=indent,
+            width=width,
+            depth=depth,
+            compact=compact,
+        )
+        if sys.version_info.minor < 8
+        else _pformat(
+            object=object,
+            indent=indent,
+            width=width,
+            depth=depth,
+            compact=compact,
+            sort_dicts=sort_dicts,
+        )
+    )
 
 
 class VisualizationMixin:
@@ -214,9 +226,7 @@ class VisualizationMixin:
         else:
             plt.close()
 
-        if return_figure:
-            return fig
-        return None
+        return fig if return_figure else None
 
     plot_loss = show_loss
 
@@ -249,7 +259,7 @@ class OptimalBatchSizeMixin:
                 break
 
         # Make and solve a system of equations for `item_size`, `model_size`
-        matrix = np.array([[batch_size, 1] for batch_size in table.keys()])
+        matrix = np.array([[batch_size, 1] for batch_size in table])
         vector = np.array([value['memory'] for value in table.values()])
         item_size, model_size = np.dot(np.linalg.pinv(matrix), vector)
 
@@ -402,7 +412,7 @@ class ExtractionMixin:
         if not isinstance(layers, (tuple, list, dict)):
             container = {0: layers}
         elif isinstance(layers, (tuple, list)):
-            container = {i: item for i, item in enumerate(layers)}
+            container = dict(enumerate(layers))
         else:
             container = dict(layers) # shallow copy is fine
 
@@ -479,9 +489,7 @@ class ExtractionMixin:
         image_var = image_var.detach().cpu().numpy()
         extractor.close()
 
-        if return_loss:
-            return image_var, losses
-        return image_var
+        return (image_var, losses) if return_loss else image_var
 
     def get_gradcam(self, inputs, targets=None,
                     layer=None, gradient_mode='onehot', cam_class=None):
@@ -517,7 +525,7 @@ class ExtractionMixin:
         elif 'target' in gradient_mode:
             gradient = targets
         elif 'onehot' in gradient_mode:
-            gradient = torch.zeros_like(prediction)[0:1]
+            gradient = torch.zeros_like(prediction)[:1]
             cam_class = cam_class or np.argmax(prediction.detach().cpu().numpy()[0])
             gradient[0][cam_class] = 1
         else:
@@ -610,7 +618,7 @@ class ExtractionMixin:
         fig, axes = plt.subplots(1, len(statistics)-1, figsize=(15, 5))
         for (ax, (title, data)) in zip(axes, statistics.items()):
             ax.plot(data)
-            ax.set_title(title + " over network units", fontsize=14)
+            ax.set_title(f"{title} over network units", fontsize=14)
             ax.set_xlabel("Network depth", fontsize=12)
             ax.set_ylabel(title, fontsize=12)
             ax.grid(True)

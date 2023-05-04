@@ -34,22 +34,16 @@ MODELS_SEG = [
 @pytest.fixture()
 def base_config_clf():
     """ Fixture to hold default configuration for classification. """
-    config = {
+    return {
         'classes': 10,
         'loss': 'ce',
     }
-    return config
 
 
 @pytest.fixture()
 def base_config_segment():
     """ Fixture to hold default configuration for segmentation. """
-    config = {
-        'inputs_shapes': (1, 64, 64),
-        'classes': 10,
-        'loss': 'ce'
-    }
-    return config
+    return {'inputs_shapes': (1, 64, 64), 'classes': 10, 'loss': 'ce'}
 
 
 

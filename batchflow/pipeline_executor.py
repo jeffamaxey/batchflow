@@ -92,10 +92,7 @@ class PipelineExecutor:
             except Exception as exc:   # pylint: disable=broad-except
                 print("Exception:", exc)
                 traceback.print_tb(exc.__traceback__)
-                if ignore_exceptions:
-                    batch = None
-                else:
-                    batch = END_PIPELINE_SIGNAL
+                batch = None if ignore_exceptions else END_PIPELINE_SIGNAL
             finally:
                 self._prefetch_queue.task_done()
                 self._batch_queue.put(batch, block=True)
@@ -116,7 +113,7 @@ class PipelineExecutor:
         if shuffle is False or isinstance(shuffle, int) and shuffle < 0:
             _ = seed.spawn(1)[0]  # do not shuffle the dataset, so skip its seed
             shuffle = False
-        elif shuffle is True or isinstance(shuffle, int) and shuffle >= 0:
+        elif shuffle is True or isinstance(shuffle, int):
             shuffle = seed.spawn(1)[0]
         else:
             raise TypeError('shuffle can be bool or int', shuffle)
@@ -145,7 +142,7 @@ class PipelineExecutor:
             batch_generator = dataset.gen_batch(*args, iter_params=self.pipeline.iter_params, shuffle=shuffle,
                                                 **kwargs)
 
-        batch_size = args[0] if len(args) != 0 else kwargs.get('batch_size')
+        batch_size = args[0] if args else kwargs.get('batch_size')
         n_iters = kwargs.get('n_iters')
         n_epochs = kwargs.get('n_epochs')
         drop_last = kwargs.get('drop_last')

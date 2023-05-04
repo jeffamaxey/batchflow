@@ -84,7 +84,7 @@ class ModelDirectory:
         """
         model = self.get(name)
         if model is None:
-            raise KeyError("Model '%s' does not exist" % name)
+            raise KeyError(f"Model '{name}' does not exist")
         if isinstance(model, NonInitializedModel):
             with self.lock:
                 model = self.get(name)
@@ -102,8 +102,7 @@ class ModelDirectory:
 
     def create_model(self, model_class, config=None):
         """ Create a model """
-        model = model_class(config=config)
-        return model
+        return model_class(config=config)
 
     def add_model(self, name, model):
         """ Add a model to the directory """
@@ -174,7 +173,9 @@ class ModelDirectory:
 
     def __add__(self, other):
         if not isinstance(other, ModelDirectory):
-            raise TypeError("ModelDirectory is expected, but given '%s'" % type(other).__name__)
+            raise TypeError(
+                f"ModelDirectory is expected, but given '{type(other).__name__}'"
+            )
 
         new_md = self.copy()
         new_md.models.update(other.models)

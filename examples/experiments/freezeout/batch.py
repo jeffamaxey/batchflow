@@ -19,17 +19,38 @@ def conv_block(input_tensor, kernel, filters, name, strides=(2, 2)):
     Output:
         x: Block output layer """
     filters1, filters2, filters3 = filters
-    x = tf.layers.conv2d(input_tensor, filters1, (1, 1), strides, name='convfir' + name, activation=tf.nn.relu,\
-                         kernel_initializer=xavier())
+    x = tf.layers.conv2d(
+        input_tensor,
+        filters1,
+        (1, 1),
+        strides,
+        name=f'convfir{name}',
+        activation=tf.nn.relu,
+        kernel_initializer=xavier(),
+    )
 
-    x = tf.layers.conv2d(x, filters2, kernel, name='convsec' + name, activation=tf.nn.relu, padding='SAME',\
-                         kernel_initializer=xavier())
+    x = tf.layers.conv2d(
+        x,
+        filters2,
+        kernel,
+        name=f'convsec{name}',
+        activation=tf.nn.relu,
+        padding='SAME',
+        kernel_initializer=xavier(),
+    )
 
-    x = tf.layers.conv2d(x, filters3, (1, 1), name='convthr' + name,\
-                         kernel_initializer=xavier())
+    x = tf.layers.conv2d(
+        x, filters3, (1, 1), name=f'convthr{name}', kernel_initializer=xavier()
+    )
 
-    shortcut = tf.layers.conv2d(input_tensor, filters3, (1, 1), strides, name='short' + name, \
-                         kernel_initializer=xavier())
+    shortcut = tf.layers.conv2d(
+        input_tensor,
+        filters3,
+        (1, 1),
+        strides,
+        name=f'short{name}',
+        kernel_initializer=xavier(),
+    )
     x = tf.concat([x, shortcut], axis=1)
     x = tf.nn.relu(x)
     return x
@@ -47,14 +68,28 @@ def identity_block(input_tensor, kernel, filters, name):
     Output:
         x: Block output layer """
     filters1, filters2, filters3 = filters
-    x = tf.layers.conv2d(input_tensor, filters1, (1, 1), name='convfir' + name, activation=tf.nn.relu,\
-                         kernel_initializer=xavier())
+    x = tf.layers.conv2d(
+        input_tensor,
+        filters1,
+        (1, 1),
+        name=f'convfir{name}',
+        activation=tf.nn.relu,
+        kernel_initializer=xavier(),
+    )
 
-    x = tf.layers.conv2d(x, filters2, kernel, name='convsec' + name, activation=tf.nn.relu, padding='SAME',\
-                         kernel_initializer=xavier())
+    x = tf.layers.conv2d(
+        x,
+        filters2,
+        kernel,
+        name=f'convsec{name}',
+        activation=tf.nn.relu,
+        padding='SAME',
+        kernel_initializer=xavier(),
+    )
 
-    x = tf.layers.conv2d(x, filters3, (1, 1), name='convthr' + name,\
-                         kernel_initializer=xavier())
+    x = tf.layers.conv2d(
+        x, filters3, (1, 1), name=f'convthr{name}', kernel_initializer=xavier()
+    )
 
 
     x = tf.concat([x, input_tensor], axis=1)
@@ -144,7 +179,7 @@ class ResBatch(Batch):
             input_batch = tf.reshape(input_batch, shape=[-1, 28, 28, 1], name='x_to_tens')
 
             net = tf.layers.conv2d(input_batch, 32, (7, 7), strides=(2, 2), padding='SAME', activation=tf.nn.relu, \
-                                   kernel_initializer=xavier(), name='1')
+                                       kernel_initializer=xavier(), name='1')
             net = tf.layers.max_pooling2d(net, (2, 2), (2, 2), name='max_pool')
 
             net = conv_block(net, 3, [32, 32, 128], name='2', strides=(1, 1))
@@ -168,10 +203,10 @@ class ResBatch(Batch):
             train = []
 
             for i in range(1, 6):
-                global_steps.append(tf.Variable(0, trainable=False, name='var_{}'.format(i)))
+                global_steps.append(tf.Variable(0, trainable=False, name=f'var_{i}'))
                 train.append(create_train(tf.train.MomentumOptimizer, str(i), \
-                                          global_steps[-1], loss, iteration * (i / 10 + 0.5) ** config['degree'], \
-                                           iteration, learning_rate, scaled))
+                                              global_steps[-1], loss, iteration * (i / 10 + 0.5) ** config['degree'], \
+                                               iteration, learning_rate, scaled))
 
             lables_hat = tf.cast(tf.argmax(net, axis=1), tf.float32, name='lables_hat')
             lables = tf.cast(tf.argmax(y, axis=1), tf.float32, name='lables')

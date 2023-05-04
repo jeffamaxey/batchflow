@@ -106,7 +106,7 @@ def test_get_pos_slice(index):
 def test_get_pos_iterable(index):
     index, values = index
     elem = values
-    assert (index.get_pos(elem) == np.arange(len(values))).all()
+    assert (index.get_pos(elem) == np.arange(len(elem))).all()
 
 
 def test_shuffle_bool_false(index):

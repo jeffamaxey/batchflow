@@ -37,12 +37,7 @@ def make_function(method, is_global=False):
 
     # strip indent spaces
     source = [s[indent:] for s in source if len(s) > indent]
-    # skip all decorator and comment lines before 'def' or 'async def'
-    start = 0
-    for i, s in enumerate(source):
-        if s[:3] in ['def', 'asy']:
-            start = i
-            break
+    start = next((i for i, s in enumerate(source) if s[:3] in ['def', 'asy']), 0)
     source = '\n'.join(source[start:])
 
     globs = globals() if is_global else method.__globals__.copy()
@@ -50,7 +45,7 @@ def make_function(method, is_global=False):
 
     # Method with the same name might exist in various classes or modules
     # so a global function should have a unique name
-    function_name = method.__module__ + "_" + method.__qualname__
+    function_name = f"{method.__module__}_{method.__qualname__}"
     function_name = function_name.replace('.', '_')
     globs[function_name] = globs[method.__name__]
     return globs[function_name]
@@ -72,21 +67,19 @@ def _make_action_wrapper(action_method, use_lock=None, no_eval=None):
     @functools.wraps(action_method)
     def _action_wrapper(action_self, *args, **kwargs):
         """ Call the action method """
-        if use_lock is not None:
-            if action_self.pipeline is not None:
-                if isinstance(use_lock, bool):
-                    _lock_name = '#_lock_' + action_method.__name__
-                else:
-                    _lock_name = use_lock
-                if not action_self.pipeline.has_variable(_lock_name):
-                    action_self.pipeline.init_variable(_lock_name, threading.Lock())
-                action_self.pipeline.get_variable(_lock_name).acquire()
+        if use_lock is not None and action_self.pipeline is not None:
+            if isinstance(use_lock, bool):
+                _lock_name = f'#_lock_{action_method.__name__}'
+            else:
+                _lock_name = use_lock
+            if not action_self.pipeline.has_variable(_lock_name):
+                action_self.pipeline.init_variable(_lock_name, threading.Lock())
+            action_self.pipeline.get_variable(_lock_name).acquire()
 
         _res = action_method(action_self, *args, **kwargs)
 
-        if use_lock is not None:
-            if action_self.pipeline is not None:
-                action_self.pipeline.get_variable(_lock_name).release()
+        if use_lock is not None and action_self.pipeline is not None:
+            action_self.pipeline.get_variable(_lock_name).release()
 
         return _res
 
@@ -129,7 +122,7 @@ def action(*args, **kwargs):
         def another_critical_section(self, some_arg, another_arg):
             ...
     """
-    if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+    if len(args) == 1 and not kwargs and callable(args[0]):
         # action without arguments
         return _make_action_wrapper(action_method=args[0])
     # action with arguments
@@ -165,9 +158,9 @@ def apply_parallel(*args, **kwargs):
         method.apply_kwargs = kwargs
         return method
 
-    if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
+    if len(args) == 1 and not kwargs and callable(args[0]):
         return mark(args[0])
-    if len(args) != 0:
+    if args:
         raise ValueError("This decorator accepts only named arguments")
 
     return mark
@@ -252,9 +245,7 @@ def inbatch_parallel(init, post=None, target='threads', _use_self=None, debug=Fa
             return init_fn, post_fn
 
         def _call_init_fn(init_fn, args, kwargs):
-            if callable(init_fn):
-                return init_fn(*args, **kwargs)
-            return init_fn
+            return init_fn(*args, **kwargs) if callable(init_fn) else init_fn
 
         def _call_post_fn(self, post_fn, futures, args, kwargs):
             all_results = []
@@ -279,7 +270,7 @@ def inbatch_parallel(init, post=None, target='threads', _use_self=None, debug=Fa
             return post_fn(all_results, *args, **kwargs)
 
         def _prepare_args(self, args, kwargs):
-            params = list()
+            params = []
 
             def _get_value(value, pos=None, name=None):
                 if isinstance(value, P):
@@ -296,7 +287,7 @@ def inbatch_parallel(init, post=None, target='threads', _use_self=None, debug=Fa
                 _args.append(_get_value(v, pos=i))
             _kwargs = {}
             for k, v in kwargs.items():
-                _kwargs.update({k: _get_value(v, name=k)})
+                _kwargs[k] = _get_value(v, name=k)
 
             return _args, _kwargs, params
 
@@ -306,11 +297,11 @@ def inbatch_parallel(init, post=None, target='threads', _use_self=None, debug=Fa
                isinstance(init_args[0], tuple) and isinstance(init_args[1], dict):
                 margs, mkwargs = init_args
             elif isinstance(init_args, dict):
-                margs = list()
+                margs = []
                 mkwargs = init_args
             else:
                 margs = init_args
-                mkwargs = dict()
+                mkwargs = {}
 
             margs = margs if isinstance(margs, (list, tuple)) else [margs]
 
@@ -464,6 +455,7 @@ def inbatch_parallel(init, post=None, target='threads', _use_self=None, debug=Fa
             else:
                 raise ValueError('Wrong parallelization target:', _target)
             return x
+
         return wrapped_method
 
     return inbatch_parallel_decorator
@@ -512,7 +504,7 @@ def mjit(*args, nopython=True, nogil=True, **kwargs):
             return func(None, *args, **kwargs)
         return _wrapped_method
 
-    if len(args) == 1 and (callable(args[0])) and len(kwargs) == 0:
+    if len(args) == 1 and (callable(args[0])) and not kwargs:
         method = args[0]
         args = tuple()
         return _jit(method)

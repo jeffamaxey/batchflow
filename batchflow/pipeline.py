@@ -73,13 +73,12 @@ class Pipeline:
             _config = pipeline.config or {}
             self.config = {**config, **_config}
             self._actions = actions or pipeline._actions[:]
-            if self.num_actions == 1:
-                if proba is not None:
-                    if self.get_last_action_repeat() is None:
-                        self._actions[-1]['proba'] = mult_option(proba, self.get_last_action_proba())
-                elif repeat is not None:
-                    if self.get_last_action_proba() is None:
-                        self._actions[-1]['repeat'] = mult_option(repeat, self.get_last_action_repeat())
+            if proba is not None:
+                if self.num_actions == 1 and self.get_last_action_repeat() is None:
+                    self._actions[-1]['proba'] = mult_option(proba, self.get_last_action_proba())
+            elif repeat is not None:
+                if self.num_actions == 1 and self.get_last_action_proba() is None:
+                    self._actions[-1]['repeat'] = mult_option(repeat, self.get_last_action_repeat())
             self._lazy_run = pipeline._lazy_run
             self.variables = pipeline.variables.copy()
             self.strict = pipeline.strict
@@ -146,18 +145,16 @@ class Pipeline:
         if proba is None:
             if repeat is None:
                 new_p = cls(pipeline=pipeline, actions=actions)
-            else:
-                if pipeline.num_actions == 1 and pipeline.get_last_action_proba() is None:
-                    new_p = cls(pipeline=pipeline, repeat=repeat)
-                else:
-                    new_p = cls()
-                    new_p.append_pipeline(pipeline, repeat=repeat)
-        else:
-            if pipeline.num_actions == 1 and pipeline.get_last_action_repeat() is None:
-                new_p = cls(pipeline=pipeline, proba=proba)
+            elif pipeline.num_actions == 1 and pipeline.get_last_action_proba() is None:
+                new_p = cls(pipeline=pipeline, repeat=repeat)
             else:
                 new_p = cls()
-                new_p.append_pipeline(pipeline, proba=proba)
+                new_p.append_pipeline(pipeline, repeat=repeat)
+        elif pipeline.num_actions == 1 and pipeline.get_last_action_repeat() is None:
+            new_p = cls(pipeline=pipeline, proba=proba)
+        else:
+            new_p = cls()
+            new_p.append_pipeline(pipeline, proba=proba)
         return new_p
 
     @classmethod
@@ -213,8 +210,7 @@ class Pipeline:
             raise ValueError("Repeat count cannot be negative. Use as pipeline * positive_number")
         if isinstance(other, float):
             raise ValueError("Repeat count cannot be float. Use as pipeline * integer")
-        new_p = self.from_pipeline(self, repeat=other)
-        return new_p
+        return self.from_pipeline(self, repeat=other)
 
     def __lshift__(self, other):
         new_p = self.from_pipeline(self)
@@ -242,7 +238,7 @@ class Pipeline:
         else:
             name = action['name']
         idx = self._actions.index(action)
-        return name if add_index is False else '{} #{}'.format(name, idx)
+        return name if add_index is False else f'{name} #{idx}'
 
     def add_namespace(self, *namespaces):
         """ Add namespace to call pipeline actions from
@@ -288,21 +284,25 @@ class Pipeline:
 
     def get_method(self, name):
         """ Return a method by the name """
-        for namespace in self._all_namespaces:
-            if hasattr(namespace, name):
-                return getattr(namespace, name)
-        return None
+        return next(
+            (
+                getattr(namespace, name)
+                for namespace in self._all_namespaces
+                if hasattr(namespace, name)
+            ),
+            None,
+        )
 
     def __getattr__(self, name):
         """ Check if an unknown attr is an action from some batch class """
         if name[:2] == '__' and name[-2:] == '__':
             # if a magic method is not defined, throw an error
-            raise AttributeError('Unknown magic method: %s' % name)
+            raise AttributeError(f'Unknown magic method: {name}')
         if self._is_batch_method(name):
             return partial(self._add_action, name)
         if self.is_method_from_ns(name):
             return partial(self._add_action, CALL_FROM_NS_ID, _name=name)
-        raise AttributeError("%s not found in class %s" % (name, self.__class__.__name__))
+        raise AttributeError(f"{name} not found in class {self.__class__.__name__}")
 
     @property
     def num_actions(self):
@@ -323,8 +323,7 @@ class Pipeline:
             if _args:
                 action.update(**_args)
             actions.append(action)
-        new_p = self.from_pipeline(self, actions=actions)
-        return new_p
+        return self.from_pipeline(self, actions=actions)
 
     def append_pipeline(self, pipeline, proba=None, repeat=None):
         """ Add a nested pipeline to the log of future actions """
@@ -755,15 +754,10 @@ class Pipeline:
         kwargs_value = action['kwargs']
 
         args = []
-        if len(args_value) == 0:
-            pass
-        else:
+        if len(args_value) != 0:
             args.extend(args_value)
-        if len(kwargs_value) == 0:
-            pass
-        else:
-            for k in kwargs_value:
-                args.append(str(k) + '=' + str(kwargs_value[k]))
+        if len(kwargs_value) != 0:
+            args.extend(f'{str(k)}={str(kwargs_value[k])}' for k in kwargs_value)
         try:
             print(*args)
         except OSError:
@@ -795,7 +789,7 @@ class Pipeline:
         if callable(fn):
             output = fn(*action['args'], **action['kwargs'])
         else:
-            raise TypeError("Callable is expected, but got {}".format(type(fn)))
+            raise TypeError(f"Callable is expected, but got {type(fn)}")
         if action['save_to'] is not None:
             self._save_output(batch, None, output, action['save_to'])
 
@@ -806,27 +800,21 @@ class Pipeline:
 
     @staticmethod
     def _get_action_method(batch, name):
-        if hasattr(batch, name):
-            attr = getattr(batch, name)
-            if attr.__self__ == batch:
-                # action decorator with arguments
-                # attr is bounded to the batch
-                action_method = attr
-                action_attr = attr
-            else:
-                # action decorator wihout arguments
-                action_method = attr
-                action_attr = attr.__self__
-
-            if callable(action_attr):
-                if hasattr(action_attr, 'action'):
-                    action_spec = getattr(action_attr, 'action')
-                else:
-                    raise ValueError("Method %s is not marked with @action decorator" % name)
-            else:
-                raise TypeError("%s is not a method" % name)
+        if not hasattr(batch, name):
+            raise AttributeError(
+                f"Method '{name}' has not been found in the {type(batch).__name__} class"
+            )
+        attr = getattr(batch, name)
+        # action decorator with arguments
+        # attr is bounded to the batch
+        action_method = attr
+        action_attr = attr if attr.__self__ == batch else attr.__self__
+        if not callable(action_attr):
+            raise TypeError(f"{name} is not a method")
+        if hasattr(action_attr, 'action'):
+            action_spec = getattr(action_attr, 'action')
         else:
-            raise AttributeError("Method '%s' has not been found in the %s class" % (name, type(batch).__name__))
+            raise ValueError(f"Method {name} is not marked with @action decorator")
         return action_method, action_spec
 
     def _exec_one_action(self, batch, action, iteration=None):
@@ -1361,7 +1349,7 @@ class Pipeline:
             available_metrics = [m for m in METRICS if metrics_class in m]
             if len(available_metrics) > 1:
                 raise ValueError('Metrics name is ambiguous', metrics_class)
-            if len(available_metrics) == 0:
+            if not available_metrics:
                 raise ValueError('Metrics not found', metrics_class)
             metrics_class = METRICS[available_metrics[0]]
         elif not isinstance(metrics_class, type):
@@ -1481,7 +1469,7 @@ class Pipeline:
                     batches.append(new_batch)
                     cur_len += len(new_batch)
 
-            if len(batches) == 0:
+            if not batches:
                 break
 
             if _action['merge'] is None:
@@ -1604,8 +1592,7 @@ class Pipeline:
     def create_batch(self, batch_index, *args, **kwargs):
         """ Create a new batch by given indices and execute all lazy actions """
         batch = self._dataset.create_batch(batch_index, *args, **kwargs)
-        batch_res = self.execute_for(batch)
-        return batch_res
+        return self.execute_for(batch)
 
     def next_batch(self, *args, n_epochs=None, **kwargs):
         """ Get the next batch and execute all lazy actions
@@ -1618,16 +1605,14 @@ class Pipeline:
         --------
         :meth:`~.Pipeline.gen_batch`
         """
-        if len(args) == 0 and len(kwargs) == 0 and self._lazy_run is not None:
+        if not args and not kwargs and self._lazy_run is not None:
             args, kwargs = self._lazy_run
         else:
             kwargs['n_epochs'] = n_epochs
 
         if self._batch_generator is None:
             self._batch_generator = self.gen_batch(*args, reset=None, **kwargs)
-        batch = next(self._batch_generator)
-
-        return batch
+        return next(self._batch_generator)
 
     def run(self, *args, **kwargs):
         """ Execute all lazy actions for each batch in the dataset
@@ -1641,14 +1626,14 @@ class Pipeline:
             self._lazy_run = args, kwargs
             return self
 
-        if len(args) == 0 and len(kwargs) == 0 and self._lazy_run is not None:
+        if not args and not kwargs and self._lazy_run is not None:
             args, kwargs = self._lazy_run
 
         args_value, kwargs_value = self._eval_run_args(args, kwargs)
 
         if kwargs_value.get('n_epochs', None) is None and kwargs_value.get('n_iters', None) is None:
             warnings.warn('Batch generation will never stop as ' \
-                          'n_epochs=None and n_iters=None', RuntimeWarning)
+                              'n_epochs=None and n_iters=None', RuntimeWarning)
 
         return PipelineExecutor(self).run(*args_value, **kwargs_value)
 

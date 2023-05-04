@@ -96,9 +96,7 @@ def test_apply_parallel_p(p_type, named_expr, src):
 
     b = pipeline.next_batch()
 
-    if isinstance(src, str):
-        assert True
-    else:
+    if not isinstance(src, str):
         assert (b.images == b.masks).all()
 
 @pytest.mark.parametrize('p_type', P_OPTIONS)
@@ -115,8 +113,6 @@ def test_inbatch_parallel_p(p_type, named_expr):
     )
 
     _ = pipeline.next_batch()
-
-    assert True
 
 #--------------------
 #         I
@@ -239,24 +235,33 @@ def test_l(batch_size):
     batch_size
         The length of array with components.
     """
-    batch = (Dataset(batch_size).p
-        .add_components('object', [DummyObject() for i in range(batch_size)])
-        .add_components('object2', [None for i in range(batch_size)])
-        # single get/set attr/item
+    batch = (
+        Dataset(batch_size)
+        .p.add_components('object', [DummyObject() for _ in range(batch_size)])
+        .add_components('object2', [None for _ in range(batch_size)])
         .update(L('object2'), L('object'))
         .update(L('object').attr, L('object').battr)
         .update(L('object').item['item_0'], [[10, 10, 10]] * batch_size)
-        .update(L('object').item[['item_3', 'item_4']], L('object').item[['item_1', 'item_2']])
-        # multiple get/set attr/item
+        .update(
+            L('object').item[['item_3', 'item_4']],
+            L('object').item[['item_1', 'item_2']],
+        )
         .update(L('object').other.attr_one, L('object').other.attr_two)
-        .update(L('object').other.item['item_one'], L('object').other.item['item_two'])
-        .update(L('object').other_list[0].item['item_one'], L('object').other_list[1].item['item_two'])
-        # getitem with Named Expression
+        .update(
+            L('object').other.item['item_one'],
+            L('object').other.item['item_two'],
+        )
+        .update(
+            L('object').other_list[0].item['item_one'],
+            L('object').other_list[1].item['item_two'],
+        )
         .add_components('comp', 0)
-        .update(L('object').cattr[B('comp')], L('object').other.cattr[B('comp')])
-        # Call
+        .update(
+            L('object').cattr[B('comp')], L('object').other.cattr[B('comp')]
+        )
         .do_nothing(L('object').function(1, B('comp'), a=5, b=B('comp')))
-    ).next_batch(batch_size)
+        .next_batch(batch_size)
+    )
 
     for i in range(batch_size):
         assert isinstance(batch.object2[i], DummyObject)

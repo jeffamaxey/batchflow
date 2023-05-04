@@ -117,7 +117,7 @@ class PipelineProfiler(Profiler):
             warnings.warn("Profiling has not been enabled.")
             return None
 
-        detailed = False if not self.detailed else detailed
+        detailed = detailed if self.detailed else False
 
         if per_iter is False and detailed is False:
             columns = columns or ['total_time', 'eval_time']

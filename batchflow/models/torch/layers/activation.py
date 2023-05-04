@@ -87,14 +87,13 @@ class Activation(nn.Module):
         # String: get from list of available activations
         if isinstance(activation, str):
             name = activation.lower()
-            if name in self.FUNCTIONS:
-                if isinstance(self.FUNCTIONS[name], str):
-                    activation = getattr(nn, self.FUNCTIONS[name])
-                else:
-                    activation = self.FUNCTIONS[name]
-            else:
+            if name not in self.FUNCTIONS:
                 raise ValueError('Unknown activation', activation)
 
+            if isinstance(self.FUNCTIONS[name], str):
+                activation = getattr(nn, self.FUNCTIONS[name])
+            else:
+                activation = self.FUNCTIONS[name]
         # A class to make as activation module
         if isinstance(activation, type) and issubclass(activation, nn.Module):
             # check if activation has `in_place` parameter
@@ -117,6 +116,4 @@ class Activation(nn.Module):
                              "a string, type, nn.Module or a callable, but given", activation)
 
     def forward(self, x):
-        if self.activation:
-            return self.activation(x, *self.args, **self.kwargs)
-        return x
+        return self.activation(x, *self.args, **self.kwargs) if self.activation else x

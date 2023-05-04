@@ -87,9 +87,9 @@ class TestDataset:
 
     def _assert_cv_attrs(self, dataset, n_splits):
         for i in range(n_splits):
-            assert hasattr(dataset, 'cv' + str(i))
-            assert dataset.cv(i) is getattr(dataset, 'cv' + str(i))
-        assert not hasattr(dataset, 'cv' + str(n_splits))
+            assert hasattr(dataset, f'cv{str(i)}')
+            assert dataset.cv(i) is getattr(dataset, f'cv{str(i)}')
+        assert not hasattr(dataset, f'cv{str(n_splits)}')
 
     def test_cv_split(self, dataset):
         n_splits = 3
